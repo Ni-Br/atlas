@@ -2,14 +2,8 @@ import args
 import fs
 import log
 
-#log.v("Getting all .fits in directories and sub-dirs")
-#fitsFiles = [os.path.join(dirpath, f)
-#        for dirpath, dirnames, files in os.walk(args.pwd)
-#        for f in fnmatch.filter(files, "*.fit*")]
 log.i("Indexing " + args.pwd)
 fs.indexFiles(args.pwd)
-#log.v("Files are:")
-#print(fitsFiles)
 
 log.i("Getting unprocessed images")
 unprocImgNames = fs.getUnprocessedImageNames(args.pwd)

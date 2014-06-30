@@ -36,14 +36,50 @@ def getFlats(imgName):
     return
 
 def getUnprocessedImageNames(pwd):
-    return []
+    f = open(pwd + ".lights")
+    filenames = []
+    for line in f:
+        filenames.append(line)
+    return filenames
     #returnself.images.find({'AT_PROC': False, 'PICTTYPE': imgTypes()["Light"]})
 
 def indexFiles(pwd):
+    #os.remove(".flats")
+    #os.remove(".biass")
+    #os.remove(".darks")
+    #os.remove(".lights")
+    #os.remove(".errors")
+    #os.remove(".unknowns")
+    log.d("Looking for all *.fit* in " + pwd)
     fitsFiles = [os.path.join(dirpath, f)
             for dirpath, dirnames, files in os.walk(pwd)
             for f in fnmatch.filter(files, "*.fit*")]
+    #print(fitsFiles)
     for f in fitsFiles:
-        pass
-        #TODO sort into fileType and create list files
+        log.d("Processing "+f)
+        hdu_list = pyfits.open(f)
+        hdu = hdu_list[0]
+        hdr = hdu.header
+        imgType = hdr["PICTTYPE"]
+        outFile = "None"
+        if isFlat(imgType):
+            log.v(f + " is a flat.")
+            outFile = ".flats"
+        elif isDark(imgType):
+            log.v(f + " is a dark")
+            outFile = ".darks"
+        elif isBias(imgType):
+            log.v(f + " is a bias")
+            outFile = ".biass"
+        elif isLight(imgType):
+            log.v(f + " is a light frame!")
+            outFile = ".lights"
+        elif isUnknown(imgType):
+            log.w(f + " is of unknown type?")
+            outFile = ".unknowns"
+        else:
+            log.wtf("ImgType not unknown or anything else??")
+            outFile = ".errors"
+        outputFile = open(pwd+outFile, 'a')
+        outputFile.write(f + "\n")
     return
