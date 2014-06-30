@@ -17,29 +17,41 @@ def isUnknown(imgType):
 def imgTypes():
     return {"Unknown":0, "Light":1, "Bias":2, "Dark":3, "Flat":4}
 
-def getDarks(imgName):
-    return
-    #date = self.getDateRange(imgName)
-    #expTime = imgName['EXPTIME']
-    #print(date)
-    #print(expTime)
-    #self.log.d("Finding darks from date:" + date + " and of exposure time:" + expTime)
-    #res = self.images.find({'EXPTIME': expTime})
-    #query = ({'DATE-OBS': {'$regex': '^'+date}, 'EXPTIME': expTime})
-    #print(query)
-    #return res
+def getDarks(pwd, imgName):
+    hdu_list = pyfits.open(imgName)
+    hdr = hdu_list[0].header
+    expTime = hdr["EXPTIME"]
+    dateObs = hdr["DATE-OBS"].split("T")
+    darkList = []
 
-def getBiass(imgName):
+    darkFile = open(pwd + ".darks")
+    for dark in darkFile:
+        darkName = dark.strip('\n')
+        f = pyfits.open(darkName)
+        darkHdr = f[0].header
+        match = True
+        if darkHdr["EXPTIME"] != expTime:
+            match = False
+        if dateObs[0] in darkHdr["DATE-OBS"]:
+            match = False
+        if match:
+            log.v("Found dark, matches with  " + dark)
+            darkList.append(dark)
+
+    return darkList
+
+def getBiass(pwd, imgName):
     return
 
-def getFlats(imgName):
+def getFlats(pwd, imgName):
     return
 
 def getUnprocessedImageNames(pwd):
     f = open(pwd + ".lights")
     filenames = []
     for line in f:
-        filenames.append(line)
+        fn = line.rstrip('\n')
+        filenames.append(fn)
     return filenames
     #returnself.images.find({'AT_PROC': False, 'PICTTYPE': imgTypes()["Light"]})
 
@@ -80,6 +92,7 @@ def indexFiles(pwd):
         else:
             log.wtf("ImgType not unknown or anything else??")
             outFile = ".errors"
+        #TODO only open file once in w+ mode
         outputFile = open(pwd+outFile, 'a')
         outputFile.write(f + "\n")
     return
