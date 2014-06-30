@@ -1,7 +1,8 @@
+import args
+
 #TODO Change logFile to actually mean the file
 def prep( pre, message):
-    print("["+pre+"] ".format(message))
-
+    print("["+pre+"] "+message)
 
 def wtf( message):
     prep("WTF?", message)
@@ -10,17 +11,17 @@ def e( message):
     prep("E", message)
 
 def w( message):
-    if level > 0:
+    if args.logLevel > 0:
         prep("W", message)
 
 def i( message):
-    if level > 1:
+    if args.logLevel > 1:
         prep("I", message)
 
 def d( message):
-    if level > 2:
+    if args.logLevel > 2:
         prep("D", message)
 
 def v( message):
-    if level > 3:
+    if args.logLevel > 3:
         prep("V", message)
