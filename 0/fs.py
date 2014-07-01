@@ -67,6 +67,12 @@ def indexFiles(pwd):
             for dirpath, dirnames, files in os.walk(pwd)
             for f in fnmatch.filter(files, "*.fit*")]
     #print(fitsFiles)
+    listDarks = []
+    listBiass = []
+    listFlats = []
+    listLights = []
+    listUnknowns = []
+    listErrors = []
     for f in fitsFiles:
         log.d("Processing "+f)
         hdu_list = pyfits.open(f)
@@ -76,23 +82,41 @@ def indexFiles(pwd):
         outFile = "None"
         if isFlat(imgType):
             log.v(f + " is a flat.")
-            outFile = ".flats"
+            listFlats.append(f)
         elif isDark(imgType):
             log.v(f + " is a dark")
-            outFile = ".darks"
+            listDarks.append(f)
         elif isBias(imgType):
             log.v(f + " is a bias")
-            outFile = ".biass"
+            listBiass.append(f)
         elif isLight(imgType):
             log.v(f + " is a light frame!")
-            outFile = ".lights"
+            listLights.append(f)
         elif isUnknown(imgType):
             log.w(f + " is of unknown type?")
-            outFile = ".unknowns"
+            listUnknowns.append(f)
         else:
             log.wtf("ImgType not unknown or anything else??")
-            outFile = ".errors"
+            listErrors.append(f)
         #TODO only open file once in w+ mode
-        outputFile = open(pwd+outFile, 'a')
-        outputFile.write(f + "\n")
+    writeListToFile(pwd+".flats", listFlats)
+    writeListToFile(pwd+".darks", listDarks)
+    writeListToFile(pwd+".biass", listBiass)
+    writeListToFile(pwd+".lights", listLights)
+    writeListToFile(pwd+".unknowns", listUnknowns)
+    writeListToFile(pwd+".errors", listErrors)
+    writeListToFile(pwd+".flats", listFlats)
     return
+
+def writeListToFile(filename, array):
+    f = open(filename, 'w+')
+    for element in array:
+        f.write(element + '\n')
+
+def readFileToArray(filename):
+    f = open(filename, 'r')
+    array = []
+    for line in f:
+        text = line.strip('\n')
+        array.append(text)
+    return array
