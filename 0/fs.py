@@ -24,18 +24,24 @@ def getDarks(pwd, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     darkList = []
 
-    darkFile = open(pwd + ".darks")
-    for dark in darkFile:
-        darkName = dark.strip('\n')
-        f = pyfits.open(darkName)
+    log.v("Looking for darks from date:" + dateObs[0] + " and exptime:" + str(expTime))
+    darks = readFileToArray(pwd + ".darks")
+    darkList = []
+    for dark in darks:
+        f = pyfits.open(dark)
         darkHdr = f[0].header
         match = True
         if darkHdr["EXPTIME"] != expTime:
             match = False
-        if dateObs[0] in darkHdr["DATE-OBS"]:
+        else:
+            log.v("Exptime match for " + dark + ":" + str(darkHdr["EXPTIME"]) + "vs." + str(expTime))
+        if dateObs[0] not in darkHdr["DATE-OBS"]:
             match = False
+        else:
+            log.v("Date    match for " + dark + ":" + str(darkHdr["DATE-OBS"]) + "vs." + str(dateObs[0]))
         if match:
             log.v("Found dark, matches with  " + dark)
+            log.v("Date:" + dateObs[0] + ", exptime:" +str(expTime))
             darkList.append(dark)
 
     return darkList
