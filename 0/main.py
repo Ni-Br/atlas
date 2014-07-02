@@ -26,14 +26,15 @@ for img in unprocImgNames:
     biass = fs.getBiass(pwd, img)
     log.d("Getting flats")
     flats = fs.getFlats(pwd, img)
-
+    log.d("Getting darks for flats")
+    for flat in flats:
+        log.v("Getting darks for flat:" + flat)
+        fs.writeListToFile(pwd + tmp + ".darks-" + flat, fs.getDarks(pwd, flat))
     #TODO deal with not good darks
     #TODO deal with lack of flats
     #TODO deal with weird timing for calibration (before vs. after)
 
-    log.d("IRAF files")
     imgBaseName = os.path.splitext(os.path.basename(img))[0]
-    log.d("Saving lists to: " + pwd + tmp)
     fs.writeListToFile(pwd + tmp + ".darks-" + imgBaseName, darks)
     fs.writeListToFile(pwd + tmp + ".biass-" + imgBaseName, biass)
     fs.writeListToFile(pwd +tmp + ".flats-" + imgBaseName, flats)
