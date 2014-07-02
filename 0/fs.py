@@ -78,7 +78,7 @@ def getFlats(pwd, imgName):
             match = False
         if match:
             log.v("Found flat, matches with  " + flat)
-            flatList.append(flat)
+            flatsList.append(flat)
     return flatsList
 
 def getUnprocessedImageNames(pwd):
