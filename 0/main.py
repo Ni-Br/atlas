@@ -3,6 +3,7 @@ import os
 import fs
 import log
 
+tmp = args.tempDir
 pwd = args.pwd
 log.i("Indexing " + pwd)
 fs.indexFiles(pwd)
@@ -15,12 +16,15 @@ if not unprocImgNames or len(unprocImgNames) == 0:
 
 log.i("Processing " + str(len(unprocImgNames)) + " images")
 for img in unprocImgNames:
-    log.d("Getting calbration images for " + img)
-    log.v("Getting darks")
+    log.i("Getting calbration images for " + img)
+    darks = []
+    biass = []
+    flats = []
+    log.d("Getting darks")
     darks = fs.getDarks(pwd, img)
-    log.v("Getting biass")
+    log.d("Getting biass")
     biass = fs.getBiass(pwd, img)
-    log.v("Getting flats")
+    log.d("Getting flats")
     flats = fs.getFlats(pwd, img)
 
     #TODO deal with not good darks
@@ -29,9 +33,7 @@ for img in unprocImgNames:
 
     log.d("IRAF files")
     imgBaseName = os.path.splitext(os.path.basename(img))[0]
-    darksFile = open(pwd + ".darks-" + imgBaseName, "w+")
-    biassFile = open(pwd + ".biass-" + imgBaseName, "w+")
-    flatsFile = open(pwd + ".flats-" + imgBaseName, "w+")
-    print(darks, file=darksFile)
-    print(biass, file=biassFile)
-    print(flats, file=flatsFile)
+    log.d("Saving lists to: " + pwd + tmp)
+    fs.writeListToFile(pwd + tmp + ".darks-" + imgBaseName, darks)
+    fs.writeListToFile(pwd + tmp + ".biass-" + imgBaseName, biass)
+    fs.writeListToFile(pwd +tmp + ".flats-" + imgBaseName, flats)

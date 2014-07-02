@@ -33,24 +33,53 @@ def getDarks(pwd, imgName):
         match = True
         if darkHdr["EXPTIME"] != expTime:
             match = False
-        else:
-            log.v("Exptime match for " + dark + ":" + str(darkHdr["EXPTIME"]) + "vs." + str(expTime))
         if dateObs[0] not in darkHdr["DATE-OBS"]:
             match = False
-        else:
-            log.v("Date    match for " + dark + ":" + str(darkHdr["DATE-OBS"]) + "vs." + str(dateObs[0]))
         if match:
             log.v("Found dark, matches with  " + dark)
-            log.v("Date:" + dateObs[0] + ", exptime:" +str(expTime))
             darkList.append(dark)
 
     return darkList
 
 def getBiass(pwd, imgName):
-    return
+    hdu_list = pyfits.open(imgName)
+    hdr = hdu_list[0].header
+    dateObs = hdr["DATE-OBS"].split("T")
+    biasList = []
+
+    log.v("Looking for biass from date:" + dateObs[0])
+    biass = readFileToArray(pwd + ".biass")
+    biassList = []
+    for bias in biass:
+        f = pyfits.open(bias)
+        biasHdr = f[0].header
+        match = True
+        if dateObs[0] not in biasHdr["DATE-OBS"]:
+            match = False
+        if match:
+            log.v("Found bias, matches with  " + bias)
+            biasList.append(bias)
+    return biasList
 
 def getFlats(pwd, imgName):
-    return
+    hdu_list = pyfits.open(imgName)
+    hdr = hdu_list[0].header
+    dateObs = hdr["DATE-OBS"].split("T")
+    flatList = []
+
+    log.v("Looking for flats from date:" + dateObs[0])
+    flats = readFileToArray(pwd + ".flats")
+    flatsList = []
+    for flat in flats:
+        f = pyfits.open(flat)
+        flatHdr = f[0].header
+        match = True
+        if dateObs[0] not in flatHdr["DATE-OBS"]:
+            match = False
+        if match:
+            log.v("Found flat, matches with  " + flat)
+            flatList.append(flat)
+    return flatsList
 
 def getUnprocessedImageNames(pwd):
     f = open(pwd + ".lights")
@@ -115,6 +144,7 @@ def indexFiles(pwd):
     return
 
 def writeListToFile(filename, array):
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     f = open(filename, 'w+')
     for element in array:
         f.write(element + '\n')
