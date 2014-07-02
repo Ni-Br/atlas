@@ -9,12 +9,12 @@ parser.add_argument("--log-level", type=int, default=3, help="Sets the level of 
 
 args = parser.parse_args()
 
-global pwd
+global root
 global logLevel
 global tempDir
 global verbose
 global summary
-pwd = args.dir
+root = args.dir
 logLevel = args.log_level
 tempDir = args.temp
 verbose = args.verbose

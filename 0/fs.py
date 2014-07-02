@@ -17,18 +17,18 @@ def isUnknown(imgType):
 def imgTypes():
     return {"Unknown":0, "Light":1, "Bias":2, "Dark":3, "Flat":4}
 
-def getDarks(pwd, imgName):
-    hdu_list = pyfits.open(imgName)
+def getDarks(root, imgName):
+    hdu_list = pyfits.open(root + imgName)
     hdr = hdu_list[0].header
     expTime = hdr["EXPTIME"]
     dateObs = hdr["DATE-OBS"].split("T")
     darkList = []
 
     log.v("Looking for darks from date:" + dateObs[0] + " and exptime:" + str(expTime))
-    darks = readFileToArray(pwd + ".darks")
+    darks = readFileToArray(root + ".darks")
     darkList = []
     for dark in darks:
-        f = pyfits.open(dark)
+        f = pyfits.open(root + dark)
         darkHdr = f[0].header
         match = True
         if darkHdr["EXPTIME"] != expTime:
@@ -41,17 +41,17 @@ def getDarks(pwd, imgName):
 
     return darkList
 
-def getBiass(pwd, imgName):
-    hdu_list = pyfits.open(imgName)
+def getBiass(root, imgName):
+    hdu_list = pyfits.open(root + imgName)
     hdr = hdu_list[0].header
     dateObs = hdr["DATE-OBS"].split("T")
     biasList = []
 
     log.v("Looking for biass from date:" + dateObs[0])
-    biass = readFileToArray(pwd + ".biass")
+    biass = readFileToArray(root + ".biass")
     biassList = []
     for bias in biass:
-        f = pyfits.open(bias)
+        f = pyfits.open(root + bias)
         biasHdr = f[0].header
         match = True
         if dateObs[0] not in biasHdr["DATE-OBS"]:
@@ -61,17 +61,17 @@ def getBiass(pwd, imgName):
             biasList.append(bias)
     return biasList
 
-def getFlats(pwd, imgName):
-    hdu_list = pyfits.open(imgName)
+def getFlats(root, imgName):
+    hdu_list = pyfits.open(root + imgName)
     hdr = hdu_list[0].header
     dateObs = hdr["DATE-OBS"].split("T")
     flatList = []
 
     log.v("Looking for flats from date:" + dateObs[0])
-    flats = readFileToArray(pwd + ".flats")
+    flats = readFileToArray(root + ".flats")
     flatsList = []
     for flat in flats:
-        f = pyfits.open(flat)
+        f = pyfits.open(root + flat)
         flatHdr = f[0].header
         match = True
         if dateObs[0] not in flatHdr["DATE-OBS"]:
@@ -81,8 +81,8 @@ def getFlats(pwd, imgName):
             flatsList.append(flat)
     return flatsList
 
-def getUnprocessedImageNames(pwd):
-    f = open(pwd + ".lights")
+def getUnprocessedImageNames(root):
+    f = open(root + ".lights")
     filenames = []
     for line in f:
         fn = line.rstrip('\n')
@@ -90,16 +90,16 @@ def getUnprocessedImageNames(pwd):
     return filenames
     #returnself.images.find({'AT_PROC': False, 'PICTTYPE': imgTypes()["Light"]})
 
-def indexFiles(pwd):
+def indexFiles(root):
     #os.remove(".flats")
     #os.remove(".biass")
     #os.remove(".darks")
     #os.remove(".lights")
     #os.remove(".errors")
     #os.remove(".unknowns")
-    log.d("Looking for all *.fit* in " + pwd)
+    log.d("Looking for all *.fit* in " + root)
     fitsFiles = [os.path.join(dirpath, f)
-            for dirpath, dirnames, files in os.walk(pwd)
+            for dirpath, dirnames, files in os.walk(root)
             for f in fnmatch.filter(files, "*.fit*")]
     #print(fitsFiles)
     listDarks = []
@@ -134,13 +134,12 @@ def indexFiles(pwd):
             log.wtf("ImgType not unknown or anything else??")
             listErrors.append(f)
         #TODO only open file once in w+ mode
-    writeListToFile(pwd+".flats", listFlats)
-    writeListToFile(pwd+".darks", listDarks)
-    writeListToFile(pwd+".biass", listBiass)
-    writeListToFile(pwd+".lights", listLights)
-    writeListToFile(pwd+".unknowns", listUnknowns)
-    writeListToFile(pwd+".errors", listErrors)
-    writeListToFile(pwd+".flats", listFlats)
+    writeListToFile(root+".flats", listFlats)
+    writeListToFile(root+".darks", listDarks)
+    writeListToFile(root+".biass", listBiass)
+    writeListToFile(root+".lights", listLights)
+    writeListToFile(root+".unknowns", listUnknowns)
+    writeListToFile(root+".errors", listErrors)
     return
 
 def writeListToFile(filename, array):
