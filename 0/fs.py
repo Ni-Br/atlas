@@ -82,26 +82,16 @@ def getFlats(root, imgName):
     return flatsList
 
 def getUnprocessedImageNames(root):
-    f = open(root + ".lights")
-    filenames = []
-    for line in f:
-        fn = line.rstrip('\n')
-        filenames.append(fn)
+    filenames = readFileToArray(root + ".lights")
     return filenames
-    #returnself.images.find({'AT_PROC': False, 'PICTTYPE': imgTypes()["Light"]})
 
 def indexFiles(root):
-    #os.remove(".flats")
-    #os.remove(".biass")
-    #os.remove(".darks")
-    #os.remove(".lights")
-    #os.remove(".errors")
-    #os.remove(".unknowns")
     log.d("Looking for all *.fit* in " + root)
-    fitsFiles = [os.path.join(dirpath, f)
+    fitsFiles = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
             for f in fnmatch.filter(files, "*.fit*")]
-    #print(fitsFiles)
+    print(fitsFiles)
+ 
     listDarks = []
     listBiass = []
     listFlats = []
@@ -109,8 +99,10 @@ def indexFiles(root):
     listUnknowns = []
     listErrors = []
     for f in fitsFiles:
+        if "atlas_0/" in f:
+            continue
         log.d("Processing "+f)
-        hdu_list = pyfits.open(f)
+        hdu_list = pyfits.open(root + f)
         hdu = hdu_list[0]
         hdr = hdu.header
         imgType = hdr["PICTTYPE"]

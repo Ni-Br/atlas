@@ -33,6 +33,6 @@ for img in unprocImgNames:
     #TODO deal with lack of flats
     #TODO deal with weird timing for calibration (before vs. after)
 
-    fs.writeListToFile(root + tmp + ".darks-" + imgBaseName, darks)
-    fs.writeListToFile(root + tmp + ".biass-" + imgBaseName, biass)
-    fs.writeListToFile(root +tmp + ".flats-" + imgBaseName, flats)
+    fs.writeListToFile(root + tmp + ".darks-" + img, darks)
+    fs.writeListToFile(root + tmp + ".biass-" + img, biass)
+    fs.writeListToFile(root +tmp + ".flats-" + img, flats)
