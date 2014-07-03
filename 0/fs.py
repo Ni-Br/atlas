@@ -85,12 +85,16 @@ def getUnprocessedImageNames(root):
     filenames = readFileToArray(root + ".lights")
     return filenames
 
+def getAllFlats(root):
+    filenames = readFileToArray(root + ".flats")
+    return filenames
+
 def indexFiles(root):
     log.d("Looking for all *.fit* in " + root)
     fitsFiles = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
             for f in fnmatch.filter(files, "*.fit*")]
-    print(fitsFiles)
+    #print(fitsFiles)
  
     listDarks = []
     listBiass = []

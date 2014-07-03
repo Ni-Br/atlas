@@ -26,9 +26,6 @@ for img in unprocImgNames:
     log.d("Getting flats")
     flats = fs.getFlats(root, img)
     log.d("Getting darks for flats")
-    for flat in flats:
-        log.v("Getting darks for flat:" + flat)
-        fs.writeListToFile(root + tmp + ".darks-" + flat, fs.getDarks(root, flat))
     #TODO deal with not good darks
     #TODO deal with lack of flats
     #TODO deal with weird timing for calibration (before vs. after)
@@ -36,3 +33,9 @@ for img in unprocImgNames:
     fs.writeListToFile(root + tmp + ".darks-" + img, darks)
     fs.writeListToFile(root + tmp + ".biass-" + img, biass)
     fs.writeListToFile(root +tmp + ".flats-" + img, flats)
+
+listFlats = fs.getAllFlats(root)
+log.i("Getting darks for flats")
+for flat in listFlats:
+    log.d("Getting darks for " + flat)
+    fs.writeListToFile(root + tmp + ".darks-" + flat, fs.getDarks(root, img))
