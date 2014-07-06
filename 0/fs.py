@@ -17,9 +17,14 @@ def isUnknown(imgType):
 def imgTypes():
     return {"Unknown":0, "Light":1, "Bias":2, "Dark":3, "Flat":4}
 
+def getHeader(filename):
+    hdu_list = pyfits.open(filename)
+    return hdu_list[0].header
+
 def getDarks(root, imgName):
-    hdu_list = pyfits.open(root + imgName)
-    hdr = hdu_list[0].header
+    #hdu_list = pyfits.open(root + imgName)
+    #hdr = hdu_list[0].header
+    hdr = getHeader(root + imgName)
     expTime = hdr["EXPTIME"]
     dateObs = hdr["DATE-OBS"].split("T")
     darkList = []
@@ -28,8 +33,7 @@ def getDarks(root, imgName):
     darks = readFileToArray(root + ".darks")
     darkList = []
     for dark in darks:
-        f = pyfits.open(root + dark)
-        darkHdr = f[0].header
+        darkHdr = getHeader(root + dark)
         match = True
         if darkHdr["EXPTIME"] != expTime:
             match = False
@@ -42,8 +46,7 @@ def getDarks(root, imgName):
     return darkList
 
 def getBiass(root, imgName):
-    hdu_list = pyfits.open(root + imgName)
-    hdr = hdu_list[0].header
+    hdr = getHeader(root + imgName)
     dateObs = hdr["DATE-OBS"].split("T")
     biasList = []
 
@@ -51,8 +54,7 @@ def getBiass(root, imgName):
     biass = readFileToArray(root + ".biass")
     biassList = []
     for bias in biass:
-        f = pyfits.open(root + bias)
-        biasHdr = f[0].header
+        biasHdr = getHeader(root + bias)
         match = True
         if dateObs[0] not in biasHdr["DATE-OBS"]:
             match = False
@@ -62,8 +64,7 @@ def getBiass(root, imgName):
     return biasList
 
 def getFlats(root, imgName):
-    hdu_list = pyfits.open(root + imgName)
-    hdr = hdu_list[0].header
+    hdr = getHeader(root + imgName)
     dateObs = hdr["DATE-OBS"].split("T")
     flatList = []
 
@@ -71,8 +72,7 @@ def getFlats(root, imgName):
     flats = readFileToArray(root + ".flats")
     flatsList = []
     for flat in flats:
-        f = pyfits.open(root + flat)
-        flatHdr = f[0].header
+        flatHdr = getHeader(root + flat)
         match = True
         if dateObs[0] not in flatHdr["DATE-OBS"]:
             match = False
@@ -106,9 +106,7 @@ def indexFiles(root):
         if "atlas_0/" in f:
             continue
         log.d("Processing "+f)
-        hdu_list = pyfits.open(root + f)
-        hdu = hdu_list[0]
-        hdr = hdu.header
+        hdr = getHeader(root + f)
         imgType = hdr["PICTTYPE"]
         outFile = "None"
         if isFlat(imgType):
