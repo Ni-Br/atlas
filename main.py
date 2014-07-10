@@ -33,7 +33,7 @@ for img in unprocImgNames:
         log.d("Getting darks")
         darks = fs.getDarks(root, img)
         darksFiles[datexp] = [img]
-        fs.writeListToFile(root + tmp + ".darks." + datexp, darks)
+        fs.writeListToFile(root + tmp + ".darks:" + datexp, darks)
     #Biass
     if date in biassFiles:
         log.d("Biass file already exists")
@@ -42,7 +42,7 @@ for img in unprocImgNames:
         log.d("Getting biass")
         biass = fs.getBiass(root, img)
         biassFiles[date] = [img]
-        fs.writeListToFile(root + tmp + ".biass." + date, biass)
+        fs.writeListToFile(root + tmp + ".biass:" + date, biass)
     #Flats
     if date in flatsFiles:
         log.d("Flats file already exists")
@@ -51,7 +51,7 @@ for img in unprocImgNames:
         log.d("Getting flats")
         flats = fs.getFlats(root, img)
         flatsFiles[date] = [img]
-        fs.writeListToFile(root +tmp + ".flats." + date, flats)
+        fs.writeListToFile(root +tmp + ".flats:" + date, flats)
     #TODO deal with not good darks
     #TODO deal with lack of flats
     #TODO deal with weird timing for calibration (before vs. after)
@@ -73,4 +73,4 @@ for flat in listFlats:
         log.d("Getting darks")
         darks = fs.getDarks(root, flat)
         darksFiles[datexp] = [flat]
-        fs.writeListToFile(root + tmp + ".darks." + datexp, darks)
+        fs.writeListToFile(root + tmp + ".darks:" + datexp, darks)
