@@ -24,16 +24,17 @@ for img in unprocImgNames:
     exptime = hdr['EXPTIME']
     date = hdr['DATE-OBS'].split('T')
     date = date[0]
-    datexp = date + "." + str(exptime)
+    datexp = date + ":" + str(exptime)
     #Darks
-    if datexp in darksFiles:
+    if date in darksFiles:
         log.d("Darks file already exists")
-        darksFiles[datexp].append(img)
+        darksFiles[date].append(img)
     else:
         log.d("Getting darks")
         darks = fs.getDarks(root, img)
-        darksFiles[datexp] = [img]
-        fs.writeListToFile(root + tmp + ".darks:" + datexp, darks)
+        darksFiles[date] = [img]
+        if len(darks) > 0:
+            fs.writeListToFile(root + tmp + ".darks:" + date, darks)
     #Biass
     if date in biassFiles:
         log.d("Biass file already exists")
@@ -42,7 +43,8 @@ for img in unprocImgNames:
         log.d("Getting biass")
         biass = fs.getBiass(root, img)
         biassFiles[date] = [img]
-        fs.writeListToFile(root + tmp + ".biass:" + date, biass)
+        if len(biass) > 0:
+            fs.writeListToFile(root + tmp + ".biass:" + date, biass)
     #Flats
     if date in flatsFiles:
         log.d("Flats file already exists")
@@ -51,26 +53,25 @@ for img in unprocImgNames:
         log.d("Getting flats")
         flats = fs.getFlats(root, img)
         flatsFiles[date] = [img]
-        fs.writeListToFile(root +tmp + ".flats:" + date, flats)
+        if len(flats) > 0:
+            fs.writeListToFile(root +tmp + ".flats:" + date, flats)
     #TODO deal with not good darks
     #TODO deal with lack of flats
     #TODO deal with weird timing for calibration (before vs. after)
-
 
 listFlats = fs.getAllFlats(root)
 log.i("Getting darks for flats")
 for flat in listFlats:
     log.i("Getting calbration images for " + flat)
     hdr = fs.getHeader(root + flat)
-    exptime = hdr['EXPTIME']
     date = hdr['DATE-OBS'].split('T')
     date = date[0]
-    datexp = date + "." + str(exptime)
-    if datexp in darksFiles:
+    if date in darksFiles:
         log.d("Darks file already exists")
-        darksFiles[datexp].append(flat)
+        darksFiles[date].append(flat)
     else:
         log.d("Getting darks")
         darks = fs.getDarks(root, flat)
-        darksFiles[datexp] = [flat]
-        fs.writeListToFile(root + tmp + ".darks:" + datexp, darks)
+        darksFiles[date] = [flat]
+        if len(darks) > 0:
+            fs.writeListToFile(root + tmp + ".darks:" + date, darks)

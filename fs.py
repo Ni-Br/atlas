@@ -25,18 +25,18 @@ def getDarks(root, imgName):
     #hdu_list = pyfits.open(root + imgName)
     #hdr = hdu_list[0].header
     hdr = getHeader(root + imgName)
-    expTime = hdr["EXPTIME"]
+    #expTime = hdr["EXPTIME"]
     dateObs = hdr["DATE-OBS"].split("T")
     darkList = []
 
-    log.v("Looking for darks from date:" + dateObs[0] + " and exptime:" + str(expTime))
+    log.v("Looking for darks from date:" + dateObs[0]) 
     darks = readFileToArray(root + ".darks")
     darkList = []
     for dark in darks:
         darkHdr = getHeader(root + dark)
         match = True
-        if darkHdr["EXPTIME"] != expTime:
-            match = False
+        #if darkHdr["EXPTIME"] != expTime:
+            #match = False
         if dateObs[0] not in darkHdr["DATE-OBS"]:
             match = False
         if match:
@@ -82,7 +82,10 @@ def getFlats(root, imgName):
     return flatsList
 
 def getUnprocessedImageNames(root):
-    filenames = readFileToArray(root + ".lights")
+    fileContents = readFileToArray(root + ".lights")
+    filenames = []
+    for line in fileContents:
+        filenames.append(line.split(":")[0])
     return filenames
 
 def getAllFlats(root):
@@ -109,6 +112,7 @@ def indexFiles(root):
         hdr = getHeader(root + f)
         imgType = hdr["PICTTYPE"]
         outFile = "None"
+        date = hdr["DATE-OBS"].split("T")[0]
         if isFlat(imgType):
             log.v(f + " is a flat.")
             listFlats.append(f)
@@ -120,7 +124,7 @@ def indexFiles(root):
             listBiass.append(f)
         elif isLight(imgType):
             log.v(f + " is a light frame!")
-            listLights.append(f)
+            listLights.append(f + ":" + date)
         elif isUnknown(imgType):
             log.w(f + " is of unknown type?")
             listUnknowns.append(f)
