@@ -1,7 +1,7 @@
 import pyfits
+import log
 import os
 import fnmatch
-import log
 
 def isFlat(imgType):
     return imgType == 4
@@ -84,31 +84,48 @@ def getFlats(root, imgName):
 def getUnprocessedImageNames(root):
     fileContents = readFileToArray(root + ".lights")
     filenames = []
+    proc = readFileToArray(root + ".proc")
+    
     for line in fileContents:
-        filenames.append(line.split(":")[0])
+        (fn, date) = line.split(":")
+        if fn not in proc:
+            filenames.append(fn)
+    filenames.sort()
     return filenames
 
-def getAllFlats(root):
-    filenames = readFileToArray(root + ".flats")
+def getUnprocessedFlatFn(root):
+    fileContents = readFileToArray(root + ".flats")
+    filenames = []
+    proc = readFileToArray(root + ".proc")
+    
+    for fn in fileContents:
+        if fn not in proc:
+            filenames.append(fn)
+    filenames.sort()
     return filenames
 
 def indexFiles(root):
     log.d("Looking for all *.fit* in " + root)
     fitsFiles = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
-            for f in fnmatch.filter(files, "*.fit*")]
+            for f in fnmatch.filter(files, "*.fit")]
     #print(fitsFiles)
  
-    listDarks = []
-    listBiass = []
-    listFlats = []
-    listLights = []
-    listUnknowns = []
-    listErrors = []
+    listDarks = readFileToArray(root + ".darks")
+    listBiass = readFileToArray(root + ".biass")
+    listFlats = readFileToArray(root + ".flats")
+    listLights = readFileToArray(root + ".lights")
+    listUnknowns = readFileToArray(root + ".unknowns")
+    listErrors = readFileToArray(root + ".errors")
+    index = readFileToArray(root + ".index")
+
     for f in fitsFiles:
-        if "atlas_0/" in f:
+        if f in index:
+            log.v("Skipped " + f)
             continue
-        log.d("Processing "+f)
+        if "atlas_" in f:
+            continue
+        log.d("Indexing "+f)
         hdr = getHeader(root + f)
         imgType = hdr["PICTTYPE"]
         outFile = "None"
@@ -132,12 +149,14 @@ def indexFiles(root):
             log.wtf("ImgType not unknown or anything else??")
             listErrors.append(f)
         #TODO only open file once in w+ mode
+        index.append(f)
     writeListToFile(root+".flats", listFlats)
     writeListToFile(root+".darks", listDarks)
     writeListToFile(root+".biass", listBiass)
     writeListToFile(root+".lights", listLights)
     writeListToFile(root+".unknowns", listUnknowns)
     writeListToFile(root+".errors", listErrors)
+    writeListToFile(root+".index", index)
     return
 
 def writeListToFile(filename, array):
@@ -147,6 +166,8 @@ def writeListToFile(filename, array):
         f.write(element + '\n')
 
 def readFileToArray(filename):
+    if not os.path.isfile(filename):
+        return []
     f = open(filename, 'r')
     array = []
     for line in f:
