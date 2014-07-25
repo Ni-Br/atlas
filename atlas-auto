@@ -8,7 +8,7 @@ if [ ! -f "$mypidfile" ] ; then
     echo "atlas-auto not running, keep going!"
     trap "rm -f -- '$mypidfile'" EXIT
 
-    python3 ${installdir}/main.py atlas_data/p1/ --log-level 3 | tee ~/atlas_data/p1/atlas-1.log
+    python3 ${installdir}/main.py ~/atlas_data/p1/ --log-level 3 | tee ~/atlas_data/p1/atlas-1.log
 
     python2 ${installdir}/reduce.py ~/atlas_data/p1/ | tee ~/atlas_data/p1/atlas-2.log
 
