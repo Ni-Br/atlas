@@ -1,7 +1,10 @@
 import pyfits
-import log
 import os
+import logging
 import fnmatch
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 def isFlat(imgType):
     return imgType == 4
@@ -29,7 +32,7 @@ def getDarks(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     darkList = []
 
-    log.v("Looking for darks from date:" + dateObs[0]) 
+    log.debug("Looking for darks from date:" + dateObs[0]) 
     darks = readFileToArray(root + ".darks")
     darkList = []
     for dark in darks:
@@ -40,7 +43,7 @@ def getDarks(root, imgName):
         if dateObs[0] not in darkHdr["DATE-OBS"]:
             match = False
         if match:
-            log.v("Found dark, matches with  " + dark)
+            log.debug("Found dark, matches with  " + dark)
             darkList.append(dark)
 
     return darkList
@@ -50,7 +53,7 @@ def getBiass(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     biasList = []
 
-    log.v("Looking for biass from date:" + dateObs[0])
+    log.debug("Looking for biass from date:" + dateObs[0])
     biass = readFileToArray(root + ".biass")
     biassList = []
     for bias in biass:
@@ -59,7 +62,7 @@ def getBiass(root, imgName):
         if dateObs[0] not in biasHdr["DATE-OBS"]:
             match = False
         if match:
-            log.v("Found bias, matches with  " + bias)
+            log.debug("Found bias, matches with  " + bias)
             biasList.append(bias)
     return biasList
 
@@ -68,7 +71,7 @@ def getFlats(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     flatList = []
 
-    log.v("Looking for flats from date:" + dateObs[0])
+    log.debug("Looking for flats from date:" + dateObs[0])
     flats = readFileToArray(root + ".flats")
     flatsList = []
     for flat in flats:
@@ -77,7 +80,7 @@ def getFlats(root, imgName):
         if dateObs[0] not in flatHdr["DATE-OBS"]:
             match = False
         if match:
-            log.v("Found flat, matches with  " + flat)
+            log.debug("Found flat, matches with  " + flat)
             flatsList.append(flat)
     return flatsList
 
@@ -105,7 +108,7 @@ def getUnprocessedFlatFn(root):
     return filenames
 
 def indexFiles(root):
-    log.d("Looking for all *.fit* in " + root)
+    log.debug("Looking for all *.fit* in " + root)
     fitsFiles = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
             for f in fnmatch.filter(files, "*.fit")]
@@ -121,32 +124,32 @@ def indexFiles(root):
 
     for f in fitsFiles:
         if f in index:
-            log.v("Skipped " + f)
+            log.debug("Skipped " + f)
             continue
         if "atlas_" in f:
             continue
-        log.d("Indexing "+f)
+        log.debug("Indexing "+f)
         hdr = getHeader(root + f)
         imgType = hdr["PICTTYPE"]
         outFile = "None"
         date = hdr["DATE-OBS"].split("T")[0]
         if isFlat(imgType):
-            log.v(f + " is a flat.")
+            log.debug(f + " is a flat.")
             listFlats.append(f)
         elif isDark(imgType):
-            log.v(f + " is a dark")
+            log.debug(f + " is a dark")
             listDarks.append(f)
         elif isBias(imgType):
-            log.v(f + " is a bias")
+            log.debug(f + " is a bias")
             listBiass.append(f)
         elif isLight(imgType):
-            log.v(f + " is a light frame!")
+            log.debug(f + " is a light frame!")
             listLights.append(f + ":" + date)
         elif isUnknown(imgType):
-            log.w(f + " is of unknown type?")
+            log.warning(f + " is of unknown type?")
             listUnknowns.append(f)
         else:
-            log.wtf("ImgType not unknown or anything else??")
+            log.error("ImgType not unknown or anything else??")
             listErrors.append(f)
         #TODO only open file once in w+ mode
         index.append(f)
