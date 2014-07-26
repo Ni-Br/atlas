@@ -20,7 +20,7 @@ def reduceDark(dListFn, dMasterFn, mBiasFn):
     print("dMasterFn: " + dMasterFn)
     iraf.reset(use_new_imt="no")
     iraf.ccdproc ("@" + dListFn,
-            output="/tmp//@" + dListFn + "//b", ccdtype=" ", max_cache=0, noproc="no", fixpix="no",
+            output="@" + dListFn + "//b", ccdtype=" ", max_cache=0, noproc="no", fixpix="no",
             overscan="no", trim="no", zerocor=zerocor, darkcor="no", flatcor="no", illumcor="no",
             fringecor="no", readcor="no", scancor="no", readaxis="line", fixfile="", biassec="",
             trimsec="", zero=mBiasFn, dark=" ", flat="", illum="", fringe="",
@@ -28,7 +28,7 @@ def reduceDark(dListFn, dMasterFn, mBiasFn):
             function="legendre", order=1, sample="*", naverage=1, niterate=1,
             low_reject=3., high_reject=3., grow=0.)
 
-    iraf.imcombine ("/tmp///@" + dListFn + "//b",
+    iraf.imcombine ("@" + dListFn + "//b",
             output=dMasterFn, headers="", bpmasks="", rejmasks="", nrejmasks="", expmasks="",
             sigmas="", imcmb="$I", logfile="STDOUT", combine="median", reject="crreject",
             project="no", outtype="real", outlimits="", offsets="none", masktype="none",
@@ -50,7 +50,7 @@ def reduceFlat(fListFn, fMasterFn, mBiasFn, mDarkFn):
     #print("@" + fListFn)
     #print(fMasterFn)
     iraf.ccdproc ("@" + fListFn,
-            output="/tmp///@" + fListFn + "//bd", ccdtype=" ", max_cache=0, noproc="no", fixpix="no",
+            output="@" + fListFn + "//bd", ccdtype=" ", max_cache=0, noproc="no", fixpix="no",
             overscan="no", trim="no", zerocor=zerocor, darkcor=darkcor, flatcor="no", illumcor="no",
             fringecor="no", readcor="no", scancor="no", readaxis="line", fixfile="", biassec="",
             trimsec="", zero=mBiasFn, dark=mDarkFn, flat="", illum="",
@@ -58,7 +58,7 @@ def reduceFlat(fListFn, fMasterFn, mBiasFn, mDarkFn):
             function="legendre", order=1, sample="*", naverage=1, niterate=1,
             low_reject=3., high_reject=3., grow=0.)
 
-    iraf.imcombine("/tmp///@" + fListFn + "//bd",
+    iraf.imcombine("@" + fListFn + "//bd",
             fMasterFn, headers="", bpmasks="", rejmasks="", nrejmasks="", expmasks="",
             sigmas="", imcmb="$I", logfile="STDOUT", combine="median", reject="crreject",
             project="no", outtype="real", outlimits="", offsets="none", masktype="none",
