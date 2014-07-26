@@ -3,8 +3,8 @@ import os
 import logging
 import fnmatch
 
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+#log = logging.getLogger(__name__)
+#log.setLevel(logging.DEBUG)
 
 def isFlat(imgType):
     return imgType == 4
@@ -32,7 +32,7 @@ def getDarks(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     darkList = []
 
-    log.debug("Looking for darks from date:" + dateObs[0]) 
+    logging.debug("Looking for darks from date:" + dateObs[0]) 
     darks = readFileToArray(root + ".darks")
     darkList = []
     for dark in darks:
@@ -43,7 +43,7 @@ def getDarks(root, imgName):
         if dateObs[0] not in darkHdr["DATE-OBS"]:
             match = False
         if match:
-            log.debug("Found dark, matches with  " + dark)
+            logging.debug("Found dark, matches with  " + dark)
             darkList.append(dark)
 
     return darkList
@@ -53,7 +53,7 @@ def getBiass(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     biasList = []
 
-    log.debug("Looking for biass from date:" + dateObs[0])
+    logging.debug("Looking for biass from date:" + dateObs[0])
     biass = readFileToArray(root + ".biass")
     biassList = []
     for bias in biass:
@@ -62,7 +62,7 @@ def getBiass(root, imgName):
         if dateObs[0] not in biasHdr["DATE-OBS"]:
             match = False
         if match:
-            log.debug("Found bias, matches with  " + bias)
+            logging.debug("Found bias, matches with  " + bias)
             biasList.append(bias)
     return biasList
 
@@ -71,7 +71,7 @@ def getFlats(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     flatList = []
 
-    log.debug("Looking for flats from date:" + dateObs[0])
+    logging.debug("Looking for flats from date:" + dateObs[0])
     flats = readFileToArray(root + ".flats")
     flatsList = []
     for flat in flats:
@@ -80,7 +80,7 @@ def getFlats(root, imgName):
         if dateObs[0] not in flatHdr["DATE-OBS"]:
             match = False
         if match:
-            log.debug("Found flat, matches with  " + flat)
+            logging.debug("Found flat, matches with  " + flat)
             flatsList.append(flat)
     return flatsList
 
@@ -108,7 +108,7 @@ def getUnprocessedFlatFn(root):
     return filenames
 
 def indexFiles(root):
-    log.debug("Looking for all *.fit* in " + root)
+    logging.debug("Looking for all *.fit* in " + root)
     fitsFiles = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
             for f in fnmatch.filter(files, "*.fit")]
@@ -124,32 +124,32 @@ def indexFiles(root):
 
     for f in fitsFiles:
         if f in index:
-            log.debug("Skipped " + f)
+            logging.debug("Skipped " + f)
             continue
         if "atlas_" in f:
             continue
-        log.debug("Indexing "+f)
+        logging.debug("Indexing "+f)
         hdr = getHeader(root + f)
         imgType = hdr["PICTTYPE"]
         outFile = "None"
         date = hdr["DATE-OBS"].split("T")[0]
         if isFlat(imgType):
-            log.debug(f + " is a flat.")
+            logging.debug(f + " is a flat.")
             listFlats.append(f)
         elif isDark(imgType):
-            log.debug(f + " is a dark")
+            logging.debug(f + " is a dark")
             listDarks.append(f)
         elif isBias(imgType):
-            log.debug(f + " is a bias")
+            logging.debug(f + " is a bias")
             listBiass.append(f)
         elif isLight(imgType):
-            log.debug(f + " is a light frame!")
+            logging.debug(f + " is a light frame!")
             listLights.append(f + ":" + date)
         elif isUnknown(imgType):
-            log.warning(f + " is of unknown type?")
+            logging.warning(f + " is of unknown type?")
             listUnknowns.append(f)
         else:
-            log.error("ImgType not unknown or anything else??")
+            logging.error("ImgType not unknown or anything else??")
             listErrors.append(f)
         #TODO only open file once in w+ mode
         index.append(f)
@@ -163,10 +163,11 @@ def indexFiles(root):
     return
 
 def writeListToFile(filename, array):
+    print(filename)
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     f = open(filename, 'w+')
     for element in array:
-        f.write(element + '\n')
+        f.write(str(element) + '\n')
 
 def readFileToArray(filename):
     if not os.path.isfile(filename):
