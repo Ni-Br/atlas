@@ -1,15 +1,10 @@
 import os
+import subprocess
+import sys
 #import log
 import fnmatch
 import fs
 import pyfits
-
-#get all .corr
-root = os.getcwd()+"/"
-baseFnList = [os.path.splitext(os.path.relpath(os.path.join(dirpath, f), root))[0]
-                    for dirpath, dirnames, files in os.walk(root)
-                                for f in fnmatch.filter(files, "*.solved")]
-baseFnList.sort()
 
 def genCooFile(ooi, starList, fn):
     #We want x&y for center
@@ -55,56 +50,106 @@ def getExoplanetList():
 def areEqual(a, b, precision = 10**(-3)):
     return abs(float(a)-float(b)) <= precision
 
-exoStarList = getExoplanetList()
-runs = {}
-for bfn in baseFnList:
-    print("opening " + bfn)
-    hdr = fs.getHeader(bfn + ".new")
-    date = hdr["DATE-OBS"].split("T")[0]
+if __name__ == "__main__":
+    exoStarList = getExoplanetList()
+    runs = {}
+    runFiles = {}
+    runOOI = {}
+    #get all .corr
+    root = sys.argv[1]
+    baseFnList = [os.path.splitext(os.path.relpath(os.path.join(dirpath, f), root))[0]
+                        for dirpath, dirnames, files in os.walk(root)
+                                    for f in fnmatch.filter(files, "*.solved")]
+    baseFnList.sort()
 
-    wcsList = [i.split(" ") for i in fs.readFileToArray(bfn + ".wcs.center")]
-    wcsDict = {}
-    for key, value in wcsList:
-        wcsDict[key] = value
+    for bfn in baseFnList:
+        print("opening " + bfn)
+        hdr = fs.getHeader(bfn + ".new")
+        date = hdr["DATE-OBS"].split("T")[0]
 
-    ooi = {}
-    starNotFound = True
-    for exoStar in exoStarList:
-        if areEqual(exoStar["ra"], wcsDict["ra_center"], 0.166) and areEqual(exoStar["dec"], wcsDict["dec_center"], 0.166):
-            starNotFound = False
-            ooi = exoStar
-            print("the star is: " + ooi["name"])
+        wcsList = [i.split(" ") for i in fs.readFileToArray(bfn + ".wcs.center")]
+        wcsDict = {}
+        for key, value in wcsList:
+            wcsDict[key] = value
 
-    if starNotFound:
-        print("404 - STAR NOT FOUND: " + bfn)
-        continue
+        ooi = {}
+        starNotFound = True
+        for exoStar in exoStarList:
+            if areEqual(exoStar["ra"], wcsDict["ra_center"], 0.166) and areEqual(exoStar["dec"], wcsDict["dec_center"], 0.166):
+                starNotFound = False
+                ooi = exoStar
+                print("the star is: " + ooi["name"])
 
-    f = pyfits.open(bfn + ".rdls")
-    rdSources = f[1].data
+        if starNotFound:
+            print("404 - STAR NOT FOUND: " + bfn)
+            continue
 
-    index = date + ooi["name"]
-    #TODO use sets
-    if index in runs:
-        temp = []
-        print(len(runs[index]))
-        count = 0
-        for i in runs[index]:
-            for j in rdSources:
-                if areEqual(i[0], j[0]) and areEqual(i[1], j[1]):
-                    exists =  False
-                    for k in temp:
-                        if areEqual(i[0], k[0]) and areEqual(k[1], i[1]):
-                            exists = True
-                    if not exists:
-                        print(str(i[0]) + ", " + str(j[0]))
-                        count += 1
-                        temp.append(i)
-        print(count)
-        runs[index] = temp
-    else:
-        runs[index] = rdSources
+        f = pyfits.open(bfn + ".rdls")
+        rdSources = f[1].data
 
-#By here runs contains all the run info necessary to do photometry
-for index in runs:
-    print(index)
-    print(runs[index])
+        index = date + ooi["name"]
+        #TODO use sets
+        #TODO use columns instead of 0 and 1
+        if index in runs:
+            runFiles[index].append(bfn)
+            temp = []
+            print(len(runs[index]))
+            count = 0
+            for i in runs[index]:
+                for j in rdSources:
+                    if areEqual(i[0], j[0]) and areEqual(i[1], j[1]):
+                        exists =  False
+                        for k in temp:
+                            if areEqual(i[0], k[0]) and areEqual(k[1], i[1]):
+                                exists = True
+                        if not exists:
+                            #print(str(i[0]) + ", " + str(j[0]))
+                            count += 1
+                            temp.append(i)
+            #print(count)
+            runs[index] = temp
+        else:
+            runs[index] = rdSources
+            runFiles[index] = [bfn]
+            runOOI[index] = ooi
+
+    #for index in runs:
+        #print(index)
+        #print(runs[index])
+        #print(runFiles[index])
+
+    for index in runs:
+        fs.writeListToFile(root + index + ".atlas.rdls", runs[index])
+        for bfn in runFiles[index]:
+            try:
+                output = subprocess.check_output(["wcs-rd2xy", "-w", bfn + ".wcs", "-r", str(runOOI[index]["ra"]), "-d", str(runOOI[index]["dec"])])
+            except subprocess.CalledProcessError as e:
+                print("wcs-rd2xy:" + str(e.output))
+            output = str(output)
+
+            #ouput format is RA,Dec (val, val) -> pixel (val, val)
+            output = output.split(">")[1]
+            output = output.split("(")[1]
+            x = output.split(",")[0]
+            y = output.split(" ")[1]
+            y = y.split(")")[0]
+            coords = [str(x) + " " + str(y)]
+            for ra, dec in runs[index]:
+                if areEqual(ra, runOOI[index]["ra"]) and areEqual(dec, runOOI[index]['dec']):
+                    continue
+                try:
+                    output = subprocess.check_output(["wcs-rd2xy", "-w", bfn + ".wcs", "-r", str(ra), "-d", str(dec)])
+                except subprocess.CalledProcessError as e:
+                    print("wcs-rd2xy:" + str(e.output))
+
+                output = str(output)
+                #ouput format is RA,Dec (val, val) -> pixel (val, val)
+                output = output.split(">")[1]
+                output = output.split("(")[1]
+                x = output.split(",")[0]
+                y = output.split(" ")[1]
+                y = y.split(")")[0]
+                print(x + " " + y)
+                coords.append(str(x) + " " + str(y))
+
+            fs.writeListToFile(root + bfn + ".new.coo", coords)
