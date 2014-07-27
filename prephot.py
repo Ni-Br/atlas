@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     for bfn in baseFnList:
         print("opening " + bfn)
-        hdr = fs.getHeader(bfn + ".new")
+        hdr = fs.getHeader(bfn + ".fits")
         date = hdr["DATE-OBS"].split("T")[0]
 
         wcsList = [i.split(" ") for i in fs.readFileToArray(bfn + ".wcs.center")]
@@ -152,4 +152,6 @@ if __name__ == "__main__":
                 print(x + " " + y)
                 coords.append(str(x) + " " + str(y))
 
-            fs.writeListToFile(root + bfn + ".new.coo", coords)
+            fs.writeListToFile(root + bfn + ".coo", coords)
+        magFileArray = [fn + ".mag" for fn in runFiles[index]]
+        fs.writeListToFile(root + index + ".txdmp", magFileArray)

@@ -7,8 +7,7 @@ from pyraf import iraf
 #TODO actually set aperture and stuff
 def phot(bfn, outFn):
     cooFile = bfn + ".coo"
-    bfn += ".new"
-    iraf.phot(bfn, coords =  cooFile, output = outFn, interac = "no", verify = "no", Stdout=1)
+    iraf.phot(bfn, coords =  cooFile, output = outFn, interac = "no", verify = "no", Stdout=0)
 
 iraf.imred()
 
@@ -27,4 +26,14 @@ if __name__ == "__main__":
 
     for bfn in bfns:
         print("Doing photometry on " + bfn)
-        phot(bfn, "atlas_" + bfn + ".mag")
+        phot(root + bfn, bfn + ".mag")
+
+    txdmpFnRgx = "*.txdmp"
+    txdmpFns = [os.path.splitext(os.path.relpath(os.path.join(dirpath, f), root))[0]
+            for dirpath, dirnames, files in os.walk(root)
+            for f in fnmatch.filter(files, txdmpFnRgx)]
+    txdmpFns.sort()
+
+    for index in txdmpFns:
+        #txdump *.mag.1 image,id,mag,otime yes > output.txt
+        iraf.txdump(textfiles = "@" + index + ".txdmp", fields= "image,id,mag,otime", expr =  "yes", Stdout = root + bfn + ".res")
