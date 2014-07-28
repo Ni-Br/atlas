@@ -1,44 +1,65 @@
+import datetime
 import fs
 import numpy as np
 import matplotlib.pyplot as plt
 
-#For explanations of parameters and maths, see fluxplot_sample #
+colorList = ['c', 'b', 'm', 'r', 'y', 'g', 'w', 'k']
+colorList+=colorList
+colorList+=colorList
+colorList+=colorList
 
 array = fs.readFileToArray("CoRoT2b-60.000secs.Light.R.00001523.res")
-data = [i.split()[2] for i in array]
+split = [i.split()[:-1] for i in array]
+times = [i.split()[-1] for i in array]
+times = times[::18]
+timestamps = [datetime.datetime.strptime(i, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=datetime.timezone.utc).timestamp() for i in times]
+data = [[], []]
+#This creates an array in the format data[star][field][exp]
+for line in split:
+    if len(data)<=int(line[0]):
+        data.append([line[2:]])
+    else:
+        data[int(line[0])].append(line[2:])
+nbStars = len(data) - 1 #Because star 0 doesn't exist, silly IRAF
+nbFields = len(data[1])
+nbExp = len(data[1][0])
 
-for i in range(len(data)):
-    if data[i] != "INDEF":
-        data[i] = float(data[i])
+goodStarsByExp = [[] for i in range(nbExp)]
+for exp in range(nbExp):
+    for star in range(1, nbStars + 1):
+        isIndef = False
+        for field in range(nbFields):
+            if isIndef or data[star][field][exp] == "INDEF":
+                isIndef = True
+                break
+        if not isIndef:
+            goodStarsByExp[exp].append(star)
 
-magdif = []
-t = 0
-time = []
-difsum = 0
-count = 0
-totalid = 18 #!!!INPUT!!!: total number of stars you do photometry
+for goodStars in goodStarsByExp:
+    print(goodStars)
 
-starlist = [1,4,5,6,7,9,10,11,12,13,14,15,16,17,18] #!!!INPUT!!!: list of all stars you want to average
 
-t_exp = 60 #!!!INPUT!!! Exposure time
+timeAxis = []
+magDifByExp = []
+for exp in range(nbExp):
+    stars = goodStarsByExp[exp]
+    if 1 not in stars:
+        continue
+    nbStars = len(stars)
+    magdif = []
+    for field in range(nbFields):
+        photSum = 0
+        for star in stars:
+            val = data[star][field][exp]
+            if val != "INDEF":
+                photSum += float(val)
+            else:
+                print("INDEF!" + str(star) + " " + str(time[field]))
+        magdif.append(photSum/nbStars - float(data[1][field][exp]))
+    magDifByExp.append(magdif)
 
-for i in range(0,int(len(data)/totalid) ):
-    average = 0
-    count = 0
-    for j in starlist:
-        val = data[i*totalid + j - 1]
-        if val != "INDEF":
-            average += data[i*totalid + j - 1]
-            count += 1
-    dif = average/count - data[i*totalid]
-#   if 0.61 <= dif and dif <= 0.68:    #to set criterion, uncomment this line, and indent next TWO lines
-    magdif.append(dif)
-    time.append(t)
-    
-    t = t + t_exp +4.8
-    
-
-plt.scatter(time, magdif)
+for i in range(len(magDifByExp)):
+    plt.scatter(timestamps, magDifByExp[i], c=colorList[i])
 #*****************Plot 'expected' start/mid/end of transit
 ##difaver = 0.65  #!!!INPUT!!!: run program for first time, look at average value of y-axis, input,
                     #then uncomment this line and the 3 lines below to plot.
