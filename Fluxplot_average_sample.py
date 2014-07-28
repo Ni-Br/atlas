@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 #For explanations of parameters and maths, see fluxplot_sample #
 
 array = fs.readFileToArray("CoRoT2b-60.000secs.Light.R.00001523.res")
-z = [i.split(" ")[4] for i in array]
+data = [i.split()[2] for i in array]
 
-for i in range(len(z)):
-    if z[i] != "INDEF":
-        z[i] = float(z[i])
+for i in range(len(data)):
+    if data[i] != "INDEF":
+        data[i] = float(data[i])
 
 magdif = []
 t = 0
@@ -22,15 +22,15 @@ starlist = [1,4,5,6,7,9,10,11,12,13,14,15,16,17,18] #!!!INPUT!!!: list of all st
 
 t_exp = 60 #!!!INPUT!!! Exposure time
 
-for i in range(0,int(len(z)/totalid) ):
+for i in range(0,int(len(data)/totalid) ):
     average = 0
     count = 0
     for j in starlist:
-        val = z[i*totalid + j - 1]
+        val = data[i*totalid + j - 1]
         if val != "INDEF":
-            average += z[i*totalid + j - 1]
+            average += data[i*totalid + j - 1]
             count += 1
-    dif = average/count - z[i*totalid]
+    dif = average/count - data[i*totalid]
 #   if 0.61 <= dif and dif <= 0.68:    #to set criterion, uncomment this line, and indent next TWO lines
     magdif.append(dif)
     time.append(t)

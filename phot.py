@@ -36,4 +36,4 @@ if __name__ == "__main__":
 
     for index in txdmpFns:
         #txdump *.mag.1 image,id,mag,otime yes > output.txt
-        iraf.txdump(textfiles = "@" + index + ".txdmp", fields= "image,id,mag,otime", expr =  "yes", Stdout = root + bfn + ".res")
+        iraf.txdump(textfiles = "@" + index + ".txdmp", fields= "id,mag,ifilter", expr =  "yes", Stdout = root + bfn + ".res")
