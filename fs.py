@@ -163,7 +163,6 @@ def indexFiles(root):
     return
 
 def writeListToFile(filename, array):
-    print(filename)
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     f = open(filename, 'w+')
     for element in array:
