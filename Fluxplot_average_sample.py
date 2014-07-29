@@ -4,6 +4,8 @@ import fnmatch
 import datetime
 import fs
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 colorList = ['c', 'b', 'm', 'r', 'y', 'g', 'w', 'k']
@@ -20,7 +22,7 @@ if __name__ == "__main__":
 
     print(resFnList)
     for fn in resFnList:
-        array = fs.readFileToArray(fn)
+        array = fs.readFileToArray(root + fn)
         split = [i.split()[:-1] for i in array]
         times = [i.split()[-1] for i in array]
         data = [[], []]
@@ -53,10 +55,12 @@ if __name__ == "__main__":
 
         timeAxis = []
         magDifByExp = []
+        diffDone = False
         for exp in range(nbExp):
             stars = goodStarsByExp[exp]
             if 1 not in stars:
                 continue
+            diffDone = True
             nbStars = len(stars)
             magdif = []
             for field in range(nbFields):
@@ -69,12 +73,28 @@ if __name__ == "__main__":
                         print("INDEF!" + str(star) + " " + str(time[field]))
                 magdif.append(photSum/nbStars - float(data[1][field][exp]))
             magDifByExp.append(magdif)
+        if not diffDone:
+            print("Sad transit: " + fn)
+            continue
+        print(fn)
 
         for i in range(len(magDifByExp)):
             plt.scatter(timestamps, magDifByExp[i], c=colorList[i])
             plt.xlabel('time (seconds)')
             plt.ylabel('apparent magnitude')
-            plt.show()
+            print(i)
+            sys.stdout.flush()
+            plt.savefig(root + os.path.splitext(fn)[0] + "-" + str(i) + ".png")
+            plt.close()
+
+        print("Next stage")
+        for i in range(len(magDifByExp)):
+            plt.scatter(timestamps, magDifByExp[i], c=colorList[i])
+        plt.xlabel('time (seconds)')
+        plt.ylabel('apparent magnitude')
+        plt.savefig(root + os.path.splitext(fn)[0] + ".png")
+        plt.close()
+        print("Done")
         #*****************Plot 'expected' start/mid/end of transit
         ##difaver = 0.65  #!!!INPUT!!!: run program for first time, look at average value of y-axis, input,
                             #then uncomment this line and the 3 lines below to plot.
