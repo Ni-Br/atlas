@@ -5,9 +5,12 @@ import sys
 from pyraf import iraf
 
 #TODO actually set aperture and stuff
-def phot(bfn, outFn):
-    cooFile = bfn + ".coo"
-    iraf.phot(bfn, coords =  cooFile, output = outFn, interac = "no", verify = "no", Stdout=0)
+def phot(fn, outFn):
+    if os.path.isfile(fn):
+        return
+
+    cooFile = fn + ".coo"
+    iraf.phot(fn, coords =  cooFile, output = outFn, interac = "no", verify = "no", Stdout=0)
 
 iraf.imred()
 
@@ -26,14 +29,14 @@ if __name__ == "__main__":
 
     for bfn in bfns:
         print("Doing photometry on " + bfn)
-        phot(root + bfn, bfn + ".mag")
+        phot(root + bfn, root + bfn + ".mag")
 
     txdmpFnRgx = "*.txdmp"
-    txdmpFns = [os.path.splitext(os.path.relpath(os.path.join(dirpath, f), root))[0]
+    txdmpFns = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
             for f in fnmatch.filter(files, txdmpFnRgx)]
     txdmpFns.sort()
 
-    for index in txdmpFns:
+    for fn in txdmpFns:
         #txdump *.mag.1 image,id,mag,otime yes > output.txt
-        iraf.txdump(textfiles = "@" + index + ".txdmp", fields= "id,mag,ifilter", expr =  "yes", Stdout = root + index + ".res")
+        iraf.txdump(textfiles = "@" + root + fn, fields= "id,mag,ifilter", expr =  "yes", Stdout = root + fn + ".res")
