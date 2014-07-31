@@ -110,6 +110,7 @@ def indexFiles(root):
     fitsFiles = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
             for f in fnmatch.filter(files, "*.fit")]
+    fitsFiles.sort()
     #print(fitsFiles)
  
     listDarks = fs.readFileToArray(root + ".darks")
