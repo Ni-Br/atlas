@@ -206,7 +206,7 @@ if __name__ == "__main__":
             darks = getDarks(root, img)
             darksFiles[date] = [img]
             if len(darks) > 0:
-                fs.writeListToFile(root + outputDir + ".debugarks:" + date, darks)
+                fs.writeListToFile(root + outputDir + ".darks:" + date, darks)
         #Biass
         if date in biassFiles:
             biassFiles[date].append(img)
