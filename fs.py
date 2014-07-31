@@ -3,8 +3,8 @@ import os
 import logging
 import fnmatch
 
-#log = logging.getLogger(__name__)
-#log.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def isFlat(imgType):
     return imgType == 4
@@ -32,7 +32,7 @@ def getDarks(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     darkList = []
 
-    logging.debug("Looking for darks from date:" + dateObs[0]) 
+    logger.debug("Looking for darks from date:" + dateObs[0]) 
     darks = readFileToArray(root + ".darks")
     darkList = []
     for dark in darks:
@@ -43,7 +43,7 @@ def getDarks(root, imgName):
         if dateObs[0] not in darkHdr["DATE-OBS"]:
             match = False
         if match:
-            logging.debug("Found dark, matches with  " + dark)
+            logger.debug("Found dark, matches with  " + dark)
             darkList.append(dark)
 
     return darkList
@@ -53,7 +53,7 @@ def getBiass(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     biasList = []
 
-    logging.debug("Looking for biass from date:" + dateObs[0])
+    logger.debug("Looking for biass from date:" + dateObs[0])
     biass = readFileToArray(root + ".biass")
     biassList = []
     for bias in biass:
@@ -62,7 +62,7 @@ def getBiass(root, imgName):
         if dateObs[0] not in biasHdr["DATE-OBS"]:
             match = False
         if match:
-            logging.debug("Found bias, matches with  " + bias)
+            logger.debug("Found bias, matches with  " + bias)
             biasList.append(bias)
     return biasList
 
@@ -71,7 +71,7 @@ def getFlats(root, imgName):
     dateObs = hdr["DATE-OBS"].split("T")
     flatList = []
 
-    logging.debug("Looking for flats from date:" + dateObs[0])
+    logger.debug("Looking for flats from date:" + dateObs[0])
     flats = readFileToArray(root + ".flats")
     flatsList = []
     for flat in flats:
@@ -80,7 +80,7 @@ def getFlats(root, imgName):
         if dateObs[0] not in flatHdr["DATE-OBS"]:
             match = False
         if match:
-            logging.debug("Found flat, matches with  " + flat)
+            logger.debug("Found flat, matches with  " + flat)
             flatsList.append(flat)
     return flatsList
 
@@ -108,7 +108,7 @@ def getUnprocessedFlatFn(root):
     return filenames
 
 def indexFiles(root):
-    logging.debug("Looking for all *.fit* in " + root)
+    logger.debug("Looking for all *.fit* in " + root)
     fitsFiles = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
             for f in fnmatch.filter(files, "*.fit")]
@@ -124,32 +124,32 @@ def indexFiles(root):
 
     for f in fitsFiles:
         if f in index:
-            logging.debug("Skipped " + f)
+            logger.debug("Skipped " + f)
             continue
         if "atlas_" in f:
             continue
-        logging.debug("Indexing "+f)
+        logger.debug("Indexing "+f)
         hdr = getHeader(root + f)
         imgType = hdr["PICTTYPE"]
         outFile = "None"
         date = hdr["DATE-OBS"].split("T")[0]
         if isFlat(imgType):
-            logging.debug(f + " is a flat.")
+            logger.debug(f + " is a flat.")
             listFlats.append(f)
         elif isDark(imgType):
-            logging.debug(f + " is a dark")
+            logger.debug(f + " is a dark")
             listDarks.append(f)
         elif isBias(imgType):
-            logging.debug(f + " is a bias")
+            logger.debug(f + " is a bias")
             listBiass.append(f)
         elif isLight(imgType):
-            logging.debug(f + " is a light frame!")
+            logger.debug(f + " is a light frame!")
             listLights.append(f + ":" + date)
         elif isUnknown(imgType):
-            logging.warning(f + " is of unknown type?")
+            logger.warning(f + " is of unknown type?")
             listUnknowns.append(f)
         else:
-            logging.error("ImgType not unknown or anything else??")
+            logger.error("ImgType not unknown or anything else??")
             listErrors.append(f)
         #TODO only open file once in w+ mode
         index.append(f)
