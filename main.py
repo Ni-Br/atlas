@@ -1,27 +1,30 @@
 import args
 import fs
-import log
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s %(name)s %(asctime)s %(message)s')
+logger = logging.getLogger(__name__)
 
 tmp = args.tempDir
 root = args.root
-log.i("Indexing " + root)
+logger.info("Indexing " + root)
 fs.indexFiles(root)
 
-log.i("Getting unprocessed images")
+logger.info("Getting unprocessed images")
 unprocImgNames = fs.getUnprocessedImageNames(root)
 if not unprocImgNames or len(unprocImgNames) == 0:
-    log.i("No unprocessed images.")
+    logger.info("No unprocessed images.")
     #TODO stop the program?
 unprocImgNames.sort()
 
-log.i("Processing " + str(len(unprocImgNames)) + " images")
+logger.info("Processing " + str(len(unprocImgNames)) + " images")
 biassFiles = {}
 darksFiles = {}
 flatsFiles = {}
 procFiles = fs.readFileToArray(root + ".proc")
 
 for img in unprocImgNames:
-    log.d("Getting calibration images for " + img)
+    logger.debug("Getting calibration images for " + img)
     hdr = fs.getHeader(root + img)
     exptime = hdr['EXPTIME']
     date = hdr['DATE-OBS'].split('T')
@@ -29,30 +32,30 @@ for img in unprocImgNames:
     datexp = date + ":" + str(exptime)
     #Darks
     if date in darksFiles:
-        log.v("Darks file already exists")
+        logger.debug("Darks file already exists")
         darksFiles[date].append(img)
     else:
-        log.v("Getting darks")
+        logger.debug("Getting darks")
         darks = fs.getDarks(root, img)
         darksFiles[date] = [img]
         if len(darks) > 0:
-            fs.writeListToFile(root + tmp + ".darks:" + date, darks)
+            fs.writeListToFile(root + tmp + ".debugarks:" + date, darks)
     #Biass
     if date in biassFiles:
-        log.v("Biass file already exists")
+        logger.debug("Biass file already exists")
         biassFiles[date].append(img)
     else:
-        log.v("Getting biass")
+        logger.debug("Getting biass")
         biass = fs.getBiass(root, img)
         biassFiles[date] = [img]
         if len(biass) > 0:
             fs.writeListToFile(root + tmp + ".biass:" + date, biass)
     #Flats
     if date in flatsFiles:
-        log.v("Flats file already exists")
+        logger.debug("Flats file already exists")
         flatsFiles[date].append(img)
     else:
-        log.v("Getting flats")
+        logger.debug("Getting flats")
         flats = fs.getFlats(root, img)
         flatsFiles[date] = [img]
         if len(flats) > 0:
@@ -63,17 +66,17 @@ for img in unprocImgNames:
     procFiles.append(img)
 
 listFlats = fs.getUnprocessedFlatFn(root)
-log.i("Getting darks for flats")
+logger.info("Getting darks for flats")
 for flat in listFlats:
-    log.d("Getting calbration images for " + flat)
+    logger.debug("Getting calbration images for " + flat)
     hdr = fs.getHeader(root + flat)
     date = hdr['DATE-OBS'].split('T')
     date = date[0]
     if date in darksFiles:
-        log.v("Darks file already exists")
+        logger.debug("Darks file already exists")
         darksFiles[date].append(flat)
     else:
-        log.v("Getting darks")
+        logger.debug("Getting darks")
         darks = fs.getDarks(root, flat)
         darksFiles[date] = [flat]
         if len(darks) > 0:

@@ -3,8 +3,6 @@ import os
 import logging
 import fnmatch
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 def isFlat(imgType):
     return imgType == 4
@@ -25,6 +23,7 @@ def getHeader(filename):
     return hdu_list[0].header
 
 def getDarks(root, imgName):
+    logger = logging.getLogger(__name__)
     #hdu_list = pyfits.open(root + imgName)
     #hdr = hdu_list[0].header
     hdr = getHeader(root + imgName)
@@ -49,6 +48,7 @@ def getDarks(root, imgName):
     return darkList
 
 def getBiass(root, imgName):
+    logger = logging.getLogger(__name__)
     hdr = getHeader(root + imgName)
     dateObs = hdr["DATE-OBS"].split("T")
     biasList = []
@@ -67,6 +67,7 @@ def getBiass(root, imgName):
     return biasList
 
 def getFlats(root, imgName):
+    logger = logging.getLogger(__name__)
     hdr = getHeader(root + imgName)
     dateObs = hdr["DATE-OBS"].split("T")
     flatList = []
@@ -85,6 +86,7 @@ def getFlats(root, imgName):
     return flatsList
 
 def getUnprocessedImageNames(root):
+    logger = logging.getLogger(__name__)
     fileContents = readFileToArray(root + ".lights")
     filenames = []
     proc = readFileToArray(root + ".proc")
@@ -97,6 +99,7 @@ def getUnprocessedImageNames(root):
     return filenames
 
 def getUnprocessedFlatFn(root):
+    logger = logging.getLogger(__name__)
     fileContents = readFileToArray(root + ".flats")
     filenames = []
     proc = readFileToArray(root + ".proc")
@@ -108,6 +111,7 @@ def getUnprocessedFlatFn(root):
     return filenames
 
 def indexFiles(root):
+    logger = logging.getLogger(__name__)
     logger.debug("Looking for all *.fit* in " + root)
     fitsFiles = [os.path.relpath(os.path.join(dirpath, f), root)
             for dirpath, dirnames, files in os.walk(root)
@@ -163,12 +167,14 @@ def indexFiles(root):
     return
 
 def writeListToFile(filename, array):
+    logger = logging.getLogger(__name__)
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     f = open(filename, 'w+')
     for element in array:
         f.write(str(element) + '\n')
 
 def readFileToArray(filename):
+    logger = logging.getLogger(__name__)
     if not os.path.isfile(filename):
         return []
     f = open(filename, 'r')
