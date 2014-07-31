@@ -1,4 +1,5 @@
 import os
+import logging
 import os.path
 import fnmatch
 import sys
@@ -15,9 +16,10 @@ def phot(fn, outFn):
 iraf.imred()
 
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
     #iraf.reset(use_new_imt="no")
     root = sys.argv[1]
-    print("Root: " + sys.argv[1])
+    logger.info("Root: " + sys.argv[1])
     fitsExt = ".fits"
 
     cooFnRgx = "*.coo"
@@ -28,7 +30,7 @@ if __name__ == "__main__":
     bfns.sort()
 
     for bfn in bfns:
-        print("Doing photometry on " + bfn)
+        logger.debug("Doing photometry on " + bfn)
         phot(root + bfn, root + bfn + ".mag")
 
     txdmpFnRgx = "*.txdmp"
