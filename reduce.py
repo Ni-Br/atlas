@@ -173,6 +173,6 @@ if __name__ == "__main__":
         dMasterFn = dMasterPre + date
         fMasterFn = fMasterPre + date
         outFn = lMasterPre + bfn
-        if not os.path.exists(outFn):
+        if not os.path.exists(os.path.dirname(outFn)):
             os.makedirs(os.path.dirname(outFn))
         reduceLight(fn, outFn, bMasterFn, dMasterFn, fMasterFn)
