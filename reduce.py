@@ -116,7 +116,7 @@ if __name__ == "__main__":
     if not os.path.exists(lMasterPre):
         os.makedirs(lMasterPre)
 
-    print "Bias"
+    print("Bias")
     #Bias 
     listOfBiasLists = [os.path.relpath(os.path.join(dirpath, f), atlas0)
             for dirpath, dirnames, files in os.walk(atlas0)
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     #print(listOfBiasLists)
     for bListFile in listOfBiasLists:
-        print "Bias:", bListFile
+        print("Bias:" + bListFile)
         date = bListFile.split(":")[1]
         reduceBias(atlas0 + bListFile, bMasterPre + date)
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
             for f in fnmatch.filter(files, dListRgx)]
     listOfDarkLists.sort()
 
-    print "DARK"
+    print("DARK")
     #print(listOfDarkLists)
     for dListFile in listOfDarkLists:
         print(dListFile)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
             for f in fnmatch.filter(files, fListRgx)]
     listOfFlatLists.sort()
 
-    print "Flat"
+    print("Flat")
     #print(listOfFlatLists)
     for fListFile in listOfFlatLists:
         print(fListFile)
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     lList = [line.strip('\n') for line in lListFile]
     lList.sort()
     
-    print "Light"
+    print("Light")
     #print(lList)
     for light in lList:
         fn = light.split(":")[0]
@@ -174,5 +174,5 @@ if __name__ == "__main__":
         fMasterFn = fMasterPre + date
         outFn = lMasterPre + bfn
         if not os.path.exists(outFn):
-            os.makedirs(outFn)
+            os.makedirs(os.path.dirname(outFn))
         reduceLight(fn, outFn, bMasterFn, dMasterFn, fMasterFn)
