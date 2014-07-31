@@ -1,6 +1,6 @@
 #!/bin/bash
-mypidfile=~/bin/atlas-auto.pid
 installdir=~/bin/atlas
+mypidfile=${installdir}/atlas-auto.pid
 datadir=$1
 
 if [ ! -f "$mypidfile" ] ; then
@@ -8,18 +8,14 @@ if [ ! -f "$mypidfile" ] ; then
     echo "atlas-auto not running, keep going!"
     trap "rm -f -- '$mypidfile'" EXIT
 
-    python3 ${installdir}/main.py ~/atlas_data/p1/ --log-level 3 | tee ~/atlas_data/p1/atlas-0.log
+    python3 ${installdir}/main.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-prep.log
 
-    python2 ${installdir}/reduce.py ~/atlas_data/p1/ | tee ~/atlas_data/p1/atlas-1.log
+    python2 ${installdir}/reduce.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-reduce.log
 
-    #Phase 3
-    for i in $( find ~/atlas_data/p1/atlas_1/light/ -name "*.fits" | sort -r); do
-        solve-field $i --no-plots --scale-units arcminwidth --scale-low 20 --scale-high 21 --continue --parity neg --no-tweak --depth 15,30,60 --cpulimit 30 -D ~/atlas_data/p1/atlas_2/
-    done
+    python3 ${installdir}/astrometry.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-astro.log
+    python3 $(installdir)/prephot.py ${datadir}/ | tee ${datadir}/atlas-prephot.log
 
-    for i in $( find ~/atlas_data/p1/atlas_2/ -name "*.wcs" | sort -r); do
-        wcsinfo $i | grep "\(ra_center \)\|\(dec_center \)" > $i.center
-    done;
+    python2 ${installdir}/phot.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-phot.log
 
-    python3 $(installdir)/prephot.py ~/atlas_2/ | tee ~/atlas_2/atlas-3.log
+    python3 ${installdir}/graph.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-graph.log
 fi
