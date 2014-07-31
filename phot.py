@@ -11,7 +11,9 @@ def phot(fn, outFn):
         return
 
     cooFile = fn + ".coo"
-    iraf.phot(fn, coords =  cooFile, output = outFn, interac = "no", verify = "no", Stdout=0)
+    iraf.phot(fn, coords =  cooFile, output = outFn, interac = "no", verify = "no", Stdout=0,
+            eposur = "exptime", filter = "filter", apertur = "5, 10, 15, 20, 25, 30", annulus = 40,
+            dannulus = 5, gain = 1, obstime = "date-obs")
 
 iraf.imred()
 
