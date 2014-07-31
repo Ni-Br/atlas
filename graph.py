@@ -5,7 +5,9 @@ import datetime
 import fs
 import numpy as np
 import matplotlib
+#To disable X, has to be imported before pyplot
 matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 
 colorList = ['c', 'b', 'm', 'r', 'y', 'g', 'w', 'k']
@@ -14,14 +16,15 @@ colorList+=colorList
 colorList+=colorList
 
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
     root = sys.argv[1]
     resFnList = [os.path.relpath(os.path.join(dirpath, f), root)
                     for dirpath, dirnames, files in os.walk(root)
                         for f in fnmatch.filter(files, "*.res")]
     resFnList.sort()
 
-    print(resFnList)
     for fn in resFnList:
+        logger.info("Working on " + fn)
         array = fs.readFileToArray(root + fn)
         split = [i.split()[:-1] for i in array]
         times = [i.split()[-1] for i in array]
@@ -36,7 +39,7 @@ if __name__ == "__main__":
         nbFields = len(data[1])
         nbExp = len(data[1][0])
         times = times[::nbStars]
-        timestamps = [datetime.datetime.strptime(i, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=datetime.timezone.utc).timestamp() for i in times]
+        timestamps = [datetime.datetime.strptime(i, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=datetime.timezone.utc) for i in times]
 
         goodStarsByExp = [[] for i in range(nbExp)]
         for exp in range(nbExp):
@@ -50,7 +53,7 @@ if __name__ == "__main__":
                     goodStarsByExp[exp].append(star)
 
         for goodStars in goodStarsByExp:
-            print(goodStars)
+            logger.debug(goodStars)
 
 
         timeAxis = []
@@ -70,28 +73,26 @@ if __name__ == "__main__":
                     if val != "INDEF":
                         photSum += float(val)
                     else:
-                        print("INDEF!" + str(star) + " " + str(time[field]))
+                        logger.error("INDEF!" + str(star) + " " + str(time[field]))
                 magdif.append(photSum/nbStars - float(data[1][field][exp]))
             magDifByExp.append(magdif)
         if not diffDone:
-            print("Sad transit: " + fn)
+            logger.warning("Sad transit: " + fn)
             continue
-        print(fn)
 
+        dates = matplotlib.dates.date2num(timestamps)
         for i in range(len(magDifByExp)):
-            plt.scatter(timestamps, magDifByExp[i], c=colorList[i])
-            plt.xlabel('time (seconds)')
-            plt.ylabel('apparent magnitude')
-            print(i)
-            sys.stdout.flush()
+            plt.scatter(dates, magDifByExp[i], c=colorList[i])
+            plt.xlabel('Timestamp (seconds)')
+            plt.ylabel('Apparent magnitude difference')
             plt.savefig(root + os.path.splitext(fn)[0] + "-" + str(i) + ".png")
             plt.close()
 
         print("Next stage")
         for i in range(len(magDifByExp)):
-            plt.scatter(timestamps, magDifByExp[i], c=colorList[i])
-        plt.xlabel('time (seconds)')
-        plt.ylabel('apparent magnitude')
+            plt.scatter(dates, magDifByExp[i], c=colorList[i])
+        plt.xlabel('Timestamp (seconds)')
+        plt.ylabel('Apparent magnitude difference')
         plt.savefig(root + os.path.splitext(fn)[0] + ".png")
         plt.close()
         print("Done")
