@@ -1,12 +1,21 @@
-import args
+import argparse
 import fs
 import logging
+
+parser = argparse.ArgumentParser()
+parser.add_argument("root", default=".", help="Search for images in specified directory")
+parser.add_argument("-v", "--verbose", action="store_true", help="Outputs contents of log to stdout as well as to the log file")
+parser.add_argument("-o", "--output", default="atlas_1/", help="Output directory")
+
+args = parser.parse_args()
+
+root = args.root
+logLevel = args.verbose
+outputDir = args.output
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s %(name)s %(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
 
-tmp = args.tempDir
-root = args.root
 logger.info("Indexing " + root)
 fs.indexFiles(root)
 
@@ -39,7 +48,7 @@ for img in unprocImgNames:
         darks = fs.getDarks(root, img)
         darksFiles[date] = [img]
         if len(darks) > 0:
-            fs.writeListToFile(root + tmp + ".debugarks:" + date, darks)
+            fs.writeListToFile(root + outputDir + ".debugarks:" + date, darks)
     #Biass
     if date in biassFiles:
         logger.debug("Biass file already exists")
@@ -49,7 +58,7 @@ for img in unprocImgNames:
         biass = fs.getBiass(root, img)
         biassFiles[date] = [img]
         if len(biass) > 0:
-            fs.writeListToFile(root + tmp + ".biass:" + date, biass)
+            fs.writeListToFile(root + outputDir + ".biass:" + date, biass)
     #Flats
     if date in flatsFiles:
         logger.debug("Flats file already exists")
@@ -59,7 +68,7 @@ for img in unprocImgNames:
         flats = fs.getFlats(root, img)
         flatsFiles[date] = [img]
         if len(flats) > 0:
-            fs.writeListToFile(root +tmp + ".flats:" + date, flats)
+            fs.writeListToFile(root +outputDir + ".flats:" + date, flats)
     #TODO deal with not good darks
     #TODO deal with lack of flats
     #TODO deal with weird timing for calibration (before vs. after)
@@ -80,7 +89,7 @@ for flat in listFlats:
         darks = fs.getDarks(root, flat)
         darksFiles[date] = [flat]
         if len(darks) > 0:
-            fs.writeListToFile(root + tmp + ".darks:" + date, darks)
+            fs.writeListToFile(root + outputDir + ".darks:" + date, darks)
     procFiles.append(flat)
 
 fs.writeListToFile(root + ".proc", procFiles)
