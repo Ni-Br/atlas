@@ -1,4 +1,5 @@
 import os
+import logging
 import os.path
 import fnmatch
 import sys
@@ -6,7 +7,7 @@ from pyraf import iraf
 
 def reduceBias(bListFn, bMasterFn):
     if not os.path.isfile(bMasterFn + ".fits"):
-        iraf.imcombine("@" + bListFn, output=bMasterFn, logfile="STDOUT", weight="none", zero="none", reject="crreject", combine="median", scale="none")
+        iraf.imcombine("@" + bListFn, output=bMasterFn, logfile=bMasterFn + ".log", weight="none", zero="none", reject="crreject", combine="median", scale="none")
 
 def reduceDark(dListFn, dMasterFn, mBiasFn):
     if os.path.isfile(dMasterFn + ".fits"):
@@ -30,7 +31,7 @@ def reduceDark(dListFn, dMasterFn, mBiasFn):
 
     iraf.imcombine ("@" + dListFn + "//atlas_b",
             output=dMasterFn, headers="", bpmasks="", rejmasks="", nrejmasks="", expmasks="",
-            sigmas="", imcmb="$I", logfile="STDOUT", combine="median", reject="crreject",
+            sigmas="", imcmb="$I", logfile=dMasterFn + ".log", combine="median", reject="crreject",
             project="no", outtype="real", outlimits="", offsets="none", masktype="none",
             maskvalue="0", blank=0., scale="exposure", zero="none", weight="none",
             statsec="", expname="", lthreshold="INDEF", hthreshold="INDEF", nlow=1, nhigh=1,
@@ -60,7 +61,7 @@ def reduceFlat(fListFn, fMasterFn, mBiasFn, mDarkFn):
 
     iraf.imcombine("@" + fListFn + "//atlas_bd",
             fMasterFn, headers="", bpmasks="", rejmasks="", nrejmasks="", expmasks="",
-            sigmas="", imcmb="$I", logfile="STDOUT", combine="median", reject="crreject",
+            sigmas="", imcmb="$I", logfile=fMasterFn + ".log", combine="median", reject="crreject",
             project="no", outtype="real", outlimits="", offsets="none", masktype="none",
             maskvalue="0", blank=0., scale="mode", zero="none", weight="none", statsec="",
             expname="", lthreshold="INDEF", hthreshold="INDEF", nlow=1, nhigh=1, nkeep=1,
@@ -68,9 +69,10 @@ def reduceFlat(fListFn, fMasterFn, mBiasFn, mDarkFn):
             sigscale=0.1, pclip=-0.5, grow=0.)
 
 def reduceLight(inFn, outFn, mBiasFn, mDarkFn, mFlatFn):
+    logger = logging.getLogger(__name__)
     if os.path.isfile(outFn + ".fits"):
         return
-    print(fn + " -> " + outFn)
+    logger.debug(inFn + " -> " + outFn)
     flatcor = "no"
     zerocor = "no"
     darkcor = "no"
@@ -92,13 +94,16 @@ def reduceLight(inFn, outFn, mBiasFn, mDarkFn, mFlatFn):
             low_reject=3., high_reject=3., grow=0.)
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s: %(message)s')
+    logger = logging.getLogger(__name__)
+
     iraf.reset(use_new_imt="no")
     iraf.imred()
     iraf.ccdred()
 
     root = sys.argv[1]
-    atlas0 = "atlas_0/"
-    print("Root: " + sys.argv[1])
+    atlas0 = root + "atlas_1/"
+    logger.info("Root: " + sys.argv[1])
     os.chdir(root)
     fitsExt = ".fits"
 
@@ -106,7 +111,7 @@ if __name__ == "__main__":
     dListRgx = ".darks*"
     fListRgx = ".flats*"
 
-    dataFolder = "atlas_1/"
+    dataFolder = "atlas_2/"
     if not os.path.exists(dataFolder):
         os.makedirs(dataFolder)
     bMasterPre = dataFolder + "abm."
@@ -116,7 +121,7 @@ if __name__ == "__main__":
     if not os.path.exists(lMasterPre):
         os.makedirs(lMasterPre)
 
-    print("Bias")
+    logger.info("Biass")
     #Bias 
     listOfBiasLists = [os.path.relpath(os.path.join(dirpath, f), atlas0)
             for dirpath, dirnames, files in os.walk(atlas0)
@@ -125,7 +130,7 @@ if __name__ == "__main__":
 
     #print(listOfBiasLists)
     for bListFile in listOfBiasLists:
-        print("Bias:" + bListFile)
+        logger.debug("Bias:" + bListFile)
         date = bListFile.split(":")[1]
         reduceBias(atlas0 + bListFile, bMasterPre + date)
 
@@ -135,10 +140,10 @@ if __name__ == "__main__":
             for f in fnmatch.filter(files, dListRgx)]
     listOfDarkLists.sort()
 
-    print("DARK")
+    logger.info("Darks")
     #print(listOfDarkLists)
     for dListFile in listOfDarkLists:
-        print(dListFile)
+        logger.debug(dListFile)
         date = dListFile.split(":")[1]
         bMasterFn = bMasterPre + date
         reduceDark(atlas0 + dListFile, dMasterPre + date, bMasterFn)
@@ -149,10 +154,10 @@ if __name__ == "__main__":
             for f in fnmatch.filter(files, fListRgx)]
     listOfFlatLists.sort()
 
-    print("Flat")
+    logger.info("Flats")
     #print(listOfFlatLists)
     for fListFile in listOfFlatLists:
-        print(fListFile)
+        logger.debug(fListFile)
         date = fListFile.split(":")[1]
         bMasterFn = bMasterPre + date
         dMasterFn = dMasterPre + date
@@ -163,7 +168,7 @@ if __name__ == "__main__":
     lList = [line.strip('\n') for line in lListFile]
     lList.sort()
     
-    print("Light")
+    logger.info("Lights")
     #print(lList)
     for light in lList:
         fn = light.split(":")[0]
@@ -172,7 +177,7 @@ if __name__ == "__main__":
         bMasterFn = bMasterPre + date
         dMasterFn = dMasterPre + date
         fMasterFn = fMasterPre + date
-        outFn = lMasterPre + bfn
+        outFn = root + lMasterPre + bfn
         if not os.path.exists(os.path.dirname(outFn)):
             os.makedirs(os.path.dirname(outFn))
-        reduceLight(fn, outFn, bMasterFn, dMasterFn, fMasterFn)
+        reduceLight(root + fn, outFn, bMasterFn, dMasterFn, fMasterFn)
