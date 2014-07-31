@@ -1,16 +1,17 @@
 import os
 import subprocess
 import sys
-#import log
+import logging
 import fnmatch
 import fs
 import pyfits
 
 def getxyFromRaDec(fn, ra, dec):
+    logger = logging.getLogger(__name__)
     try:
         output = subprocess.check_output(["wcs-rd2xy", "-w", fn + ".wcs", "-r", str(ra), "-d", str(dec)])
     except subprocess.CalledProcessError as e:
-        print("wcs-rd2xy:" + str(e.output))
+        logger.error("wcs-rd2xy:" + str(e.output))
     output = str(output)
 
     #ouput format is RA,Dec (val, val) -> pixel (val, val)
@@ -74,6 +75,7 @@ def isInField(fn, ra, dec):
     return areEqual(ra, wcsDict["ra_center"], 0.166) and areEqual(dec, wcsDict["dec_center"], 0.166)
 
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
     exoStarList = getExoplanetList()
     runs = {}
     runBfns = {}
@@ -86,7 +88,7 @@ if __name__ == "__main__":
     baseFnList.sort()
 
     for bfn in baseFnList:
-        print("opening " + bfn)
+        logger.debug("opening " + bfn)
         hdr = fs.getHeader(root + bfn + ".fits")
         date = hdr["DATE-OBS"].split("T")[0]
 
@@ -97,10 +99,10 @@ if __name__ == "__main__":
             if isInField(root + bfn, exostar["ra"], exostar["dec"]):
                 starNotFound = False
                 ooi = exostar
-                print("the star is: " + ooi["name"])
+                logger.debug("the star is: " + ooi["name"])
 
         if starNotFound:
-            print("404 - STAR NOT FOUND: " + bfn)
+            logger.info("404 - STAR NOT FOUND: " + bfn)
             continue
 
         #Figure out what sources are visible for all fields
@@ -122,8 +124,6 @@ if __name__ == "__main__":
         else:
             runs[index] = rdSources
             runBfns[index] = [bfn]
-            print(ooi)
-            print(ooi["ra"])
 
             runOOI[index] = ooi
 
