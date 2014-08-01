@@ -67,7 +67,7 @@ def areEqual(a, b, precision = 10**(-3)):
     return abs(float(a)-float(b)) <= precision
 
 def isInField(fn, ra, dec):
-    wcsList = [i.split(" ") for i in fs.readFileToArray(fn + ".wcs.center")]
+    wcsList = [i.split(" ") for i in fs.readFileToArray(fn + ".center")]
     wcsDict = {}
     for key, value in wcsList:
         wcsDict[key] = value
