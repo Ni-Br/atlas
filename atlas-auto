@@ -13,7 +13,7 @@ if [ ! -f "$mypidfile" ] ; then
     python2 ${installdir}/reduce.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-reduce.log
 
     python3 ${installdir}/astrometry.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-astro.log
-    python3 $(installdir)/prephot.py ${datadir}/ | tee ${datadir}/atlas-prephot.log
+    python3 ${installdir}/prephot.py ${datadir}/ | tee ${datadir}/atlas-prephot.log
 
     python2 ${installdir}/phot.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-phot.log
 
