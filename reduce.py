@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     #print(listOfBiasLists)
     for bListFile in listOfBiasLists:
-        logger.debug("Bias:" + bListFile)
+        logger.debug("Bias:" + atlas0 + bListFile)
         date = bListFile.split(":")[1]
         reduceBias(atlas0 + bListFile, bMasterPre + date)
 

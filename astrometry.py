@@ -21,7 +21,7 @@ if __name__ == "__main__":
         if not os.path.exists(outputDir):
             os.makedirs(outputDir)
         try:
-            cmd = "solve-field " + root + source + bfn + ".fits --no-plots --scale-units arcminwidth --scale-low 20 --scale-high 22 --continue --parity neg --no-tweak --depth 15,30,45,60 --cpulimit 30 -D " + root + dest + outputDir
+            cmd = "solve-field " + root + source + bfn + ".fits --no-plots --scale-units arcminwidth --scale-low 20 --scale-high 22 --continue --parity neg --no-tweak --depth 15,30,45,60 --cpulimit 30 -D " + root + dest + outputDir + " --new-fits " + root + dest + bfn + ".fits"
         except e:
             print(e)
         process = subprocess.Popen(cmd.split(" "))
