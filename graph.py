@@ -16,6 +16,7 @@ colorList+=colorList
 colorList+=colorList
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s: %(message)s')
     logger = logging.getLogger(__name__)
     root = sys.argv[1]
     resFnList = [os.path.relpath(os.path.join(dirpath, f), root)

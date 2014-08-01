@@ -26,6 +26,6 @@ if __name__ == "__main__":
             print(e)
         process = subprocess.Popen(cmd.split(" "))
         process.communicate()
-        cmd = 'wcsinfo ' + root + dest + bfn + ',wcs | grep "\(ra_center \)\|\(dec_center \)" > ' + root + dest + bfn + '.center'
+        cmd = 'wcsinfo ' + root + dest + bfn + '.wcs | grep "\(ra_center \)\|\(dec_center \)" > ' + root + dest + bfn + '.center'
         process = subprocess.Popen(cmd, shell=True)
         process.communicate()

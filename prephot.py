@@ -75,6 +75,7 @@ def isInField(fn, ra, dec):
     return areEqual(ra, wcsDict["ra_center"], 0.166) and areEqual(dec, wcsDict["dec_center"], 0.166)
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s: %(message)s')
     logger = logging.getLogger(__name__)
     exoStarList = getExoplanetList()
     runs = {}

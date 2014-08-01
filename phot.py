@@ -18,6 +18,7 @@ def phot(fn, outFn):
 iraf.imred()
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s: %(message)s')
     logger = logging.getLogger(__name__)
     #iraf.reset(use_new_imt="no")
     root = sys.argv[1]
