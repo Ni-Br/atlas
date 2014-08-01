@@ -10,14 +10,26 @@ def phot(fn, outFn):
     if os.path.isfile(fn):
         return
 
-    cooFile = fn + ".coo"
-    iraf.phot(fn, coords =  cooFile, output = outFn, interac = "no", verify = "no", Stdout=1,
-            exposur = "EXPTIME", airmass = "AIRMASS", filter = "FILTER", apertur = "5, 10, 15, 20, 25, 30", annulus = 40,
-            dannulus = 5, obstime = "DATE-OBS")
+    home = os.path.expanduser("~")
 
-iraf.imred()
+    iraf.centerpars.setParam("cbox", 3)
+    iraf.centerpars.saveParList(filename= home + "/uparm/aptcentes.par")
+
+    iraf.fitskypars.setParam("annulus", 30)
+    iraf.fitskypars.setParam("dannulus", 5)
+    iraf.fitskypars.saveParList(filename= home + "/uparm/aptfitsks.par")
+            
+    iraf.photpars.setParam("apertur", "3, 6, 8, 12, 15, 18, 21, 24, 27")
+    iraf.photpars.setParam("zmag", 25)
+    iraf.photpars.saveParList(filename= home + "/uparm/aptphot.par")
+
+    cooFile = fn + ".coo"
+    iraf.phot(fn, coords =  cooFile, output = outFn, interac = "no", verify = "no", Stdout=1, cbox=3,
+            exposur = "EXPTIME", airmass = "AIRMASS", filter = "DATE-OBS", #To keep it as a string
+            apertur = "3, 6, 9, 12, 15, 18, 21", annulus = 40, dannulus = 5, obstime = "")
 
 if __name__ == "__main__":
+    iraf.imred()
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s: %(message)s')
     logger = logging.getLogger(__name__)
     #iraf.reset(use_new_imt="no")
@@ -44,4 +56,4 @@ if __name__ == "__main__":
 
     for fn in txdmpFns:
         #txdump *.mag.1 image,id,mag,otime yes > output.txt
-        iraf.txdump(textfiles = "@" + root + fn, fields= "id,mag,ifilter", expr =  "yes", Stdout = root + fn + ".res")
+        iraf.txdump(textfiles = "@" + root + fn, fields= "id,mag,rapert,ifilter", expr =  "yes", Stdout = root + fn + ".res")
