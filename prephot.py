@@ -100,7 +100,7 @@ if __name__ == "__main__":
             if isInField(root + bfn, exostar["ra"], exostar["dec"]):
                 starNotFound = False
                 ooi = exostar
-                logger.debug("the star is: " + ooi["name"])
+                logger.debug("the star for " + bfn + " is: " + ooi["name"])
 
         if starNotFound:
             logger.info("404 - STAR NOT FOUND: " + bfn)
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         f = pyfits.open(root + bfn + ".rdls")
         rdSources = f[1].data
 
-        index = date + ooi["name"] 
+        index = ooi["name"] + "." + date  
         #TODO use sets
         #TODO use columns instead of 0 and 1
         if index in runs:
@@ -130,6 +130,7 @@ if __name__ == "__main__":
 
     #Output to files
     for index in runs:
+        logger.info("Writing common stars for " + index)
         fs.writeListToFile(root + "atlas_" + index + ".atlas.rdls", runs[index])
         ooi = runOOI[index]
         for bfn in runBfns[index]:
