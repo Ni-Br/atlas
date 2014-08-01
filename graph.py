@@ -1,5 +1,5 @@
 import os
-import loggin
+import logging
 import sys
 import fnmatch
 import datetime
@@ -16,6 +16,31 @@ colorList+=colorList
 colorList+=colorList
 colorList+=colorList
 
+def addDataToPlt(plt, dates, diff, c = 'w'):
+    fig, ax = plt.subplots()
+    diff3 = [i for i in diff]
+    diff7 = [i for i in diff]
+    for i in range(3, len(diff) - 4):
+        s = 0
+        for j in range(i - 3, i+4):
+            s += diff[j]
+        diff7[i] = s/7 
+    for i in range(1, len(diff) - 2):
+        s = 0
+        for j in range(i - 1, i+2):
+            s += diff[j]
+        diff3[i] = s/3 
+        
+    ax.plot_date(dates, diff, c, xdate=True, marker = "o", linestyle="", label="raw")
+    ax.plot_date(dates, diff3, 'b', xdate=True, marker = ".", linestyle="", label="avg3")
+    ax.plot_date(dates, diff7, 'r', xdate=True, marker = ".", linestyle="", label="avg7")
+    ax.xaxis.set_major_locator(matplotlib.dates.HourLocator())
+    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:00"))
+    ax.xaxis.set_minor_locator(matplotlib.dates.MinuteLocator())
+    ax.autoscale_view()
+    fig.autofmt_xdate()
+    plt.legend()
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s: %(message)s')
     logger = logging.getLogger(__name__)
@@ -30,13 +55,17 @@ if __name__ == "__main__":
         array = fs.readFileToArray(root + fn)
         split = [i.split()[:-1] for i in array]
         times = [i.split()[-1] for i in array]
+        appertures = split[0][int((len(split[0])+1) / 2):]
         data = [[], []]
         #This creates an array in the format data[star][field][exp]
         for line in split:
-            if len(data)<=int(line[0]):
-                data.append([line[2:]])
+            app = line[1:int((len(line)+1)/2)]
+            starId = int(line[0])
+            if len(data) <= starId:
+                data.append([app])
             else:
-                data[int(line[0])].append(line[2:])
+                data[starId].append(app)
+
         nbStars = len(data) - 1 #Because star 0 doesn't exist, silly IRAF
         nbFields = len(data[1])
         nbExp = len(data[1][0])
@@ -84,20 +113,19 @@ if __name__ == "__main__":
 
         dates = matplotlib.dates.date2num(timestamps)
         for i in range(len(magDifByExp)):
-            plt.scatter(dates, magDifByExp[i], c=colorList[i])
-            plt.xlabel('Timestamp (seconds)')
+            addDataToPlt(plt, dates, magDifByExp[i], "w")
+            plt.xlabel('Time')
             plt.ylabel('Apparent magnitude difference')
-            plt.savefig(root + os.path.splitext(fn)[0] + "-" + str(i) + ".png")
+            plt.savefig(root + os.path.splitext(fn)[0] + "-" + str(int(float(appertures[i]))) + ".png", dpi=180)
             plt.close()
 
-        print("Next stage")
         for i in range(len(magDifByExp)):
-            plt.scatter(dates, magDifByExp[i], c=colorList[i])
+            addDataToPlt(plt, dates, magDifByExp[i], colorList[i])
         plt.xlabel('Timestamp (seconds)')
         plt.ylabel('Apparent magnitude difference')
-        plt.savefig(root + os.path.splitext(fn)[0] + ".png")
+        plt.savefig(root + os.path.splitext(fn)[0] + ".png", dpi = 180)
         plt.close()
-        print("Done")
+        logger.info("Done")
         #*****************Plot 'expected' start/mid/end of transit
         ##difaver = 0.65  #!!!INPUT!!!: run program for first time, look at average value of y-axis, input,
                             #then uncomment this line and the 3 lines below to plot.
