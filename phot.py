@@ -19,7 +19,7 @@ def phot(fn, outFn):
     iraf.fitskypars.setParam("dannulus", 5)
     iraf.fitskypars.saveParList(filename= home + "/uparm/aptfitsks.par")
             
-    iraf.photpars.setParam("apertur", "3, 6, 8, 12, 15, 18, 21, 24, 27")
+    iraf.photpars.setParam("apertur", ', '.join(str(i) for i in range(3, 25, 2)))
     iraf.photpars.setParam("zmag", 25)
     iraf.photpars.saveParList(filename= home + "/uparm/aptphot.par")
 
@@ -56,4 +56,4 @@ if __name__ == "__main__":
 
     for fn in txdmpFns:
         #txdump *.mag.1 image,id,mag,otime yes > output.txt
-        iraf.txdump(textfiles = "@" + root + fn, fields= "id,mag,rapert,ifilter", expr =  "yes", Stdout = root + fn + ".res")
+        iraf.txdump(textfiles = "@" + root + os.path.splitext(fn)[0], fields= "id,mag,rapert,ifilter", expr =  "yes", Stdout = root + fn + ".res")
