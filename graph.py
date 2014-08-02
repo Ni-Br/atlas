@@ -1,3 +1,5 @@
+##Credit to Duy Anh N Doan <ddoan@mit.edu> for the skeleton of the script
+import statistics as stats
 import os
 import logging
 import sys
@@ -11,35 +13,46 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
-colorList = ['c', 'b', 'm', 'r', 'y', 'g', 'w', 'k']
+colorList = ['c', 'b', 'm', 'r', 'y', 'g', 'k']
 colorList+=colorList
 colorList+=colorList
 colorList+=colorList
 
-def addDataToPlt(plt, dates, diff, c = 'w'):
-    fig, ax = plt.subplots()
+def addDataToPlt(fig, ax, dates, diff, c = 'c', label="raw", isMultiple=True):
+    label1 = "average of 3"
+    label2 = "average of 7"
+
+    med3 = [i for i in diff]
+    med7 = [i for i in diff]
     diff3 = [i for i in diff]
     diff7 = [i for i in diff]
     for i in range(3, len(diff) - 4):
-        s = 0
-        for j in range(i - 3, i+4):
-            s += diff[j]
-        diff7[i] = s/7 
-    for i in range(1, len(diff) - 2):
-        s = 0
-        for j in range(i - 1, i+2):
-            s += diff[j]
-        diff3[i] = s/3 
+        if i > 2 and i < len(diff) - 4:
+            diff7[i] = stats.mean(diff[i-3:i+4])
+            med7[i] = stats.median(diff[i-3:i+3])
+        if i > 0 and i < len(diff) - 2:
+            diff3[i] = stats.mean(diff[i-1:i+2])
+            med3[i] = stats.median(diff[i-1:i+2])
         
-    ax.plot_date(dates, diff, c, xdate=True, marker = "o", linestyle="", label="raw")
-    ax.plot_date(dates, diff3, 'b', xdate=True, marker = ".", linestyle="", label="avg3")
-    ax.plot_date(dates, diff7, 'r', xdate=True, marker = ".", linestyle="", label="avg7")
+    marker = "o"
+    if len(diff) > 200:
+        marker = "."
+    if not isMultiple:
+        if stats.stdev(diff) > 0.1:
+            marker = "x"
+
+    ax.plot_date(dates, diff, c, xdate=True, marker = marker, linestyle="", label=label)
+    #ax.plot_date(dates, avg3, 'b', xdate=True, marker = ".", linestyle="", label=label1)
+    #ax.plot_date(dates, avg7, 'r', xdate=True, marker = ".", linestyle="", label=label2)
+    if isMultiple:
+        ax.plot_date(dates, med3, 'b', xdate=True, marker = ".", linestyle="", label=label1)
+        ax.plot_date(dates, med7, 'r', xdate=True, marker = ".", linestyle="", label=label2)
     ax.xaxis.set_major_locator(matplotlib.dates.HourLocator())
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:00"))
     ax.xaxis.set_minor_locator(matplotlib.dates.MinuteLocator())
     ax.autoscale_view()
     fig.autofmt_xdate()
-    plt.legend()
+    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s: %(message)s')
@@ -49,6 +62,10 @@ if __name__ == "__main__":
                     for dirpath, dirnames, files in os.walk(root)
                         for f in fnmatch.filter(files, "*.res")]
     resFnList.sort()
+
+    dest = root + "graph/"
+    if not os.path.exists(dest):
+        os.makedirs(dest)
 
     for fn in resFnList:
         logger.info("Working on " + fn)
@@ -88,43 +105,69 @@ if __name__ == "__main__":
 
 
         timeAxis = []
-        magDifByExp = []
+        magDifByExpStar = []
         diffDone = False
         for exp in range(nbExp):
             stars = goodStarsByExp[exp]
             if 1 not in stars:
                 continue
             diffDone = True
-            nbStars = len(stars)
-            magdif = []
+            magdifByStar = {}
+            for star in stars:
+                magdifByStar[star] = []
+
             for field in range(nbFields):
-                photSum = 0
+                vals = []
                 for star in stars:
-                    val = data[star][field][exp]
-                    if val != "INDEF":
-                        photSum += float(val)
-                    else:
-                        logger.error("INDEF!" + str(star) + " " + str(time[field]))
-                magdif.append(photSum/nbStars - float(data[1][field][exp]))
-            magDifByExp.append(magdif)
+                    vals.append(float(data[star][field][exp]))
+                for i in range(len(stars)):
+                    star = stars[i]
+                    magdifByStar[star].append(stats.mean(vals[1:i] + vals[i+1:]) - float(data[star][field][exp]))
+
+            magDifByExpStar.append(magdifByStar)
         if not diffDone:
             logger.warning("Sad transit: " + fn)
             continue
 
+        dpi = 150
+
+        if not os.path.exists(dest + "comp/"):
+            os.makedirs(dest + "comp/")
+
         dates = matplotlib.dates.date2num(timestamps)
-        for i in range(len(magDifByExp)):
-            addDataToPlt(plt, dates, magDifByExp[i], "w")
+        for i in range(len(magDifByExpStar)):
+            fig, ax = plt.subplots()
+            app = str(int(float(appertures[i])))
+            logger.debug("Plot " + app)
+            addDataToPlt(fig, ax, dates, magDifByExpStar[i][1], "c", app)
             plt.xlabel('Time')
             plt.ylabel('Apparent magnitude difference')
-            plt.savefig(root + os.path.splitext(fn)[0] + "-" + str(int(float(appertures[i]))) + ".png", dpi=180)
+            plt.savefig(dest + os.path.splitext(fn)[0] + "-" + app + ".png", dpi=dpi, bbox_extra_artists=(ax.legend,))
             plt.close()
 
-        for i in range(len(magDifByExp)):
-            addDataToPlt(plt, dates, magDifByExp[i], colorList[i])
+            ##Other stars, by app
+            fig, ax = plt.subplots()
+            logger.debug("Plot " + app + " comparison stars")
+            for star in goodStarsByExp[i]:
+                addDataToPlt(fig, ax, dates, magDifByExpStar[i][star], colorList[star], star, False)
+                print(str(star) + ": " + str(stats.median(magDifByExpStar[i][star])) + "," + str(stats.stdev(magDifByExpStar[i][star])))
+            sys.stdout.flush()
+            plt.xlabel('Time')
+            plt.ylabel('Apparent magnitude difference')
+            plt.savefig(dest + "comp/" + os.path.splitext(fn)[0] + "-" + app + ".comparison.png", dpi=dpi, bbox_extra_artists=(ax.legend,))
+            plt.close()
+
+        fig, ax = plt.subplots()
+        logger.debug("Plot collective")
+        for i in range(len(magDifByExpStar)):
+            app = str(int(float(appertures[i])))
+            addDataToPlt(fig, ax, dates, magDifByExpStar[i][1], colorList[i], app, False)
+
         plt.xlabel('Timestamp (seconds)')
         plt.ylabel('Apparent magnitude difference')
-        plt.savefig(root + os.path.splitext(fn)[0] + ".png", dpi = 180)
+        plt.savefig(dest + os.path.splitext(fn)[0] + ".png", dpi = dpi, bbox_extra_artists=(ax.legend(),), bbox_inches='tight')
         plt.close()
+
         logger.info("Done")
         #*****************Plot 'expected' start/mid/end of transit
         ##difaver = 0.65  #!!!INPUT!!!: run program for first time, look at average value of y-axis, input,

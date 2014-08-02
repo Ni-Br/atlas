@@ -1,13 +1,8 @@
 #!/bin/bash
 installdir=~/bin/atlas
-mypidfile=${installdir}/atlas-auto.pid
 datadir=$1
 
 if [ ! -f "$mypidfile" ] ; then
-    echo $$ > "$mypidfile"
-    echo "atlas-auto not running, keep going!"
-    trap "rm -f -- '$mypidfile'" EXIT
-
     python3 ${installdir}/main.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-prep.log
 
     python2 ${installdir}/reduce.py ${datadir}/ 2>&1 | tee ${datadir}/atlas-reduce.log
