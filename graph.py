@@ -150,7 +150,6 @@ if __name__ == "__main__":
             logger.debug("Plot " + app + " comparison stars")
             for star in goodStarsByExp[i]:
                 addDataToPlt(fig, ax, dates, magDifByExpStar[i][star], colorList[star], star, False)
-                logger.debug(str(star) + ": " + str(stats.median(magDifByExpStar[i][star])) + "," + str(stats.stdev(magDifByExpStar[i][star])))
             sys.stdout.flush()
             plt.xlabel('Time')
             plt.ylabel('Apparent magnitude difference')

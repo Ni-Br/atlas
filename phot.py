@@ -56,4 +56,4 @@ if __name__ == "__main__":
 
     for fn in txdmpFns:
         #txdump *.mag.1 image,id,mag,otime yes > output.txt
-        iraf.txdump(textfiles = "@" + root + os.path.splitext(fn)[0], fields= "id,mag,rapert,ifilter", expr =  "yes", Stdout = root + fn + ".res")
+        iraf.txdump(textfiles = "@" + root + fn, fields= "id,mag,rapert,ifilter", expr =  "yes", Stdout = root + fn + ".res")
