@@ -124,7 +124,7 @@ def indexFiles(root):
     for f in fitsFiles:
         if f in index:
             continue
-        if "atlas_" in f:
+        if "b.fit" in f or "d.fit" in f or "atlas_" in f:
             continue
         logger.debug("Indexing "+f)
         hdr = fs.getHeader(root + f)
