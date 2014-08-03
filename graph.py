@@ -100,10 +100,6 @@ if __name__ == "__main__":
                 if not isIndef:
                     goodStarsByExp[exp].append(star)
 
-        for goodStars in goodStarsByExp:
-            logger.debug(goodStars)
-
-
         timeAxis = []
         magDifByExpStar = []
         diffDone = False
