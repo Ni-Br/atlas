@@ -57,7 +57,7 @@ def addDataToPlt(fig, ax, dates, diff, c = 'c', label="raw", isMultiple=True):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s: %(message)s')
     logger = logging.getLogger(__name__)
-    root = sys.argv[1]
+    root = sys.argv[1] + "/"
     resFnList = [os.path.relpath(os.path.join(dirpath, f), root)
                     for dirpath, dirnames, files in os.walk(root)
                         for f in fnmatch.filter(files, "*.res")]
@@ -117,8 +117,9 @@ if __name__ == "__main__":
                 for star in stars:
                     vals.append(float(data[star][field][exp]))
                 for i in range(len(stars)):
-                    star = stars[i]
-                    magdifByStar[star].append(stats.mean(vals[1:i] + vals[i+1:]) - float(data[star][field][exp]))
+                    if len(stars) > 2:
+                        star = stars[i]
+                        magdifByStar[star].append(stats.mean(vals[1:i] + vals[i+1:]) - float(data[star][field][exp]))
 
             magDifByExpStar.append(magdifByStar)
         if not diffDone:
