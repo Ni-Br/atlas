@@ -193,10 +193,10 @@ if __name__ == "__main__":
                     if len(magdifByStar[star]) <= 1:
                         break
                     stdev = stats.stdev(magdifByStar[star])
-                    if star != 1 and stdev > 0.1:
+                    if star != 1 and stdev > 0.15:
                         working = True
                         stars.pop(i)
-                        logger.debug("Popping " + str(star))
+                        logger.debug("Popping " + str(star) + " stdev: " + str(stdev))
 
             #Update everything according to loop's results
             goodStarsByExp[exp] = stars
