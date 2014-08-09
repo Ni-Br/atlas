@@ -18,7 +18,7 @@ if __name__ == "__main__":
         print(bfn)
         sys.stdout.flush()
         outputDir = os.path.dirname(bfn)
-        if not os.path.exists(outputDir):
+        if not os.path.exists(outputDir) and outputDir != "":
             os.makedirs(outputDir)
         try:
             cmd = "solve-field " + root + source + bfn + ".fits --no-plots --scale-units arcminwidth --scale-low 20 --scale-high 22 --continue --skip-solved --parity neg --no-tweak --depth 15,30,45 --cpulimit 30 -D " + root + dest + outputDir + " --new-fits " + root + dest + bfn + ".fits"
