@@ -60,13 +60,22 @@ def getTransitStartEnd(index):
 
             start = datetime.datetime.strptime(start, "%m-%d-%Y,%H:%M").replace(tzinfo=datetime.timezone.utc)
             end = datetime.datetime.strptime(end, "%m-%d-%Y,%H:%M").replace(tzinfo=datetime.timezone.utc)
+            
+            found = True
 
+    if not found:
+        logger.warning("Transit not found!")
+        return ("", "")
+
+    start, end = matplotlib.dates.date2num((start, end))
     return (start, end)
 
 def addStartEndToPlt(ax, startEnd):
     start, end = startEnd
-    ax.axvline(start, color = 'r', zorder=0)
-    ax.axvline(end, color = 'b', zorder=0)
+    if start != "":
+        ax.axvline(start, color = 'r', zorder=0)
+    if end != "":
+        ax.axvline(end, color = 'b', zorder=0)
 
 
 def addDataToPlt(fig, ax, dates, diff, c = 'c', label="raw", isMultiple=True):
