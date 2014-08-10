@@ -89,7 +89,7 @@ if __name__ == "__main__":
     baseFnList.sort()
 
     for bfn in baseFnList:
-        logger.debug("opening " + bfn)
+        #logger.debug("opening " + bfn)
         hdr = fs.getHeader(root + bfn + ".fits")
         date = hdr["DATE-OBS"].split("T")[0]
 
@@ -101,18 +101,19 @@ if __name__ == "__main__":
                 starNotFound = False
                 ooi = exostar
                 logger.debug("the star for " + bfn + " is: " + ooi["name"])
-
         if starNotFound:
             logger.info("404 - STAR NOT FOUND: " + bfn)
+            continue
+
+        index = ooi["name"].replace(" ", "") + "." + date  
+        if os.path.isfile(root + "atlas_" + index + ".atlas.rdls"):
             continue
 
         #Figure out what sources are visible for all fields
         f = pyfits.open(root + bfn + ".rdls")
         rdSources = f[1].data
 
-        index = ooi["name"] + "." + date  
         #TODO use sets
-        #TODO use columns instead of 0 and 1
         if index in runs:
             runBfns[index].append(bfn)
             new = []
