@@ -164,6 +164,16 @@ if __name__ == "__main__":
         #Data analysis loop
         magdifByAppStar = []
         diffDone = False
+        canBeDone = False
+        for exp in range(nbExp):
+            if 1 in goodStarsByExp[exp]:
+                canBeDone = True
+                break
+
+        if not canBeDone:
+            logger.warning("Sad transit, star 1 is never there: " + fn)
+            continue
+
         for exp in range(nbExp):
             stars = goodStarsByExp[exp]
             #Skip if transit star isn't good
@@ -193,7 +203,7 @@ if __name__ == "__main__":
                     if len(magdifByStar[star]) <= 1:
                         break
                     stdev = stats.stdev(magdifByStar[star])
-                    if star != 1 and stdev > 0.15:
+                    if star != 1 and stdev > 0.1:
                         working = True
                         stars.pop(i)
                         logger.debug("Popping " + str(star) + " stdev: " + str(stdev))
@@ -209,7 +219,7 @@ if __name__ == "__main__":
 
         #None of the passes worked, throw a warning :(
         if not diffDone:
-            logger.warning("Sad transit: " + fn)
+            logger.warning("Sad transit, increasing stdev limit by .1?" + fn)
             continue
 
 
