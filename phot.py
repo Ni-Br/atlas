@@ -8,6 +8,7 @@ from pyraf import iraf
 #TODO actually set aperture and stuff
 def phot(fn, outFn):
     if os.path.isfile(outFn):
+        logger.debug("Skip, " + outFn + " exists!")
         return
 
     home = os.path.expanduser("~")

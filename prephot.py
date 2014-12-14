@@ -103,6 +103,7 @@ if __name__ == "__main__":
                 logger.debug("the star for " + bfn + " is: " + ooi["name"])
         if starNotFound:
             logger.info("404 - STAR NOT FOUND: " + bfn)
+            logger.debug(runBfns)
             continue
 
         index = ooi["name"].replace(" ", "") + "." + date  

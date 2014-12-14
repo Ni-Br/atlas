@@ -146,8 +146,12 @@ if __name__ == "__main__":
         nbStars = len(data) - 1 #Because star 0 doesn't exist, silly IRAF
         nbFields = len(data[1])
         nbExp = len(data[1][0])
+        logger.debug("Stars:  " + str(nbStars) + " " + str(len(data)))
+        logger.debug("Fields: " + str(nbFields) + " " + str(len(data[1])))
+        logger.debug("Apps:   " + str(nbExp) + " " + str(len(data[1][0])))
         times = times[::nbStars]
         timestamps = [datetime.datetime.strptime(i, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=datetime.timezone.utc) for i in times]
+        logger.debug("Times: " + str(len(timestamps)) + " " + str(len(times)))
 
         #Filters out the stars where DATA is INDEF
         goodStarsByExp = [[] for i in range(nbExp)]
