@@ -3,9 +3,7 @@ atlas
 
 Automatic Transit Lightcurve Analysis System
 
----
-Very much in alpha right now, it does not currently work and never has
----
+Work very much in beta. Dependencies are not fully graphed and some parts may or may not work because of that. It has worked successfully many times before.
 
 This pipeline is divided into several smaller steps, allowing refactoring for purpooses entirely different from exoplanet lightcurves.
 
